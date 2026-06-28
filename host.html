@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>椰子怪討伐戰 2.0 — 主持人後台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .card-select { padding: 0.25rem; border-radius: 4px; font-size: 1rem; width: 100%; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>🥥 主持人控制後台 (生存模式)</h1>
+                <p style="color: var(--coconut-leaf-dark);">即時發布卡片結算結果</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="openProjector()">📺 開啟大螢幕</button>
+                <button class="btn btn-primary" onclick="resetGame()">🔄 重置遊戲</button>
+            </div>
+        </header>
+
+        <div class="host-layout">
+            <main>
+                <!-- SETUP PHASE -->
+                <section id="phase-setup" class="glass-card host-section" style="display: none;">
+                    <h2>🏝️ 1. 設定小隊</h2>
+                    <form id="setup-form">
+                        <div class="grid-2" id="setup-inputs" style="margin-bottom: 1.5rem;"></div>
+                        <button type="submit" class="btn btn-success" style="width: 100%;">開始遊戲</button>
+                    </form>
+                </section>
+
+                <!-- ENCOUNTER_BID PHASE -->
+                <section id="phase-encounter-bid" class="glass-card host-section" style="display: none; border-left: 5px solid var(--ocean-dark);">
+                    <h2>⚔️ 第 <span class="info-round">-</span> 回合 — 第 <span class="info-encounter">-</span> 隻怪物</h2>
+                    
+                    <div class="glass-card" style="margin-bottom: 1rem; background: rgba(0,0,0,0.05);">
+                        <h3 style="color: var(--danger-red);">👾 當前怪物：<span id="bid-monster-name">-</span></h3>
+                        <div class="grid-2" id="bid-monster-cards" style="margin-top: 0.5rem; font-size: 0.9rem;">
+                            <!-- Cards info -->
+                        </div>
+                    </div>
+
+                    <form id="bid-form">
+                        <table class="team-table">
+                            <thead>
+                                <tr>
+                                    <th>小隊 (狀態)</th>
+                                    <th>選擇技能卡 (1-4)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bid-inputs-tbody"></tbody>
+                        </table>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">結算卡片效果</button>
+                    </form>
+                </section>
+
+                <!-- ENCOUNTER_RESULT PHASE -->
+                <section id="phase-encounter-result" class="glass-card host-section" style="display: none; border-left: 5px solid var(--danger-red);">
+                    <h2>💥 結算結果</h2>
+                    <ul id="result-list" style="margin-bottom: 1.5rem; line-height: 1.8;"></ul>
+                    <button class="btn btn-danger" onclick="nextEncounter()" style="width: 100%;">前進下一隻怪物</button>
+                </section>
+
+                <!-- ROUND_END PHASE -->
+                <section id="phase-round-end" class="glass-card host-section" style="display: none; border-left: 5px solid var(--success-green);">
+                    <h2>📊 回合結束！結算總資產</h2>
+                    <p style="margin-bottom: 1rem; color: #64748b;">本回合已落幕，請稍作休息後進入下一回合。</p>
+                    <button class="btn btn-accent" onclick="nextRound()" style="width: 100%;">進入下一回合 (HP重置為100)</button>
+                </section>
+
+                <!-- Override -->
+                <section class="glass-card" style="margin-top: 2rem;">
+                    <h3>🛡️ 手動修正</h3>
+                    <div id="override-container" class="grid-2" style="grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1rem;"></div>
+                </section>
+            </main>
+
+            <aside>
+                <div class="glass-card" style="margin-bottom: 1rem;">
+                    <h3>即時狀態</h3>
+                    <p>回合: <span class="info-round">-</span></p>
+                    <p>進度: 第 <span class="info-encounter">-</span> / 10 隻怪物</p>
+                </div>
+                <div class="glass-card" style="margin-bottom: 1rem;">
+                    <h3>小隊列表</h3>
+                    <div id="aside-teams-list"></div>
+                </div>
+                <div class="glass-card">
+                    <h3>系統日誌</h3>
+                    <div id="battle-logs-box" class="battle-logs" style="height: 250px;"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+    <script src="js/host.js"></script>
+</body>
+</html>
