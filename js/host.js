@@ -43,8 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("bid-form").addEventListener("submit", e => {
         e.preventDefault();
         const bids = {};
-        document.querySelectorAll(".card-select").forEach(sel => {
-            bids[sel.dataset.teamId] = sel.value;
+        document.querySelectorAll(".card-select-group").forEach(group => {
+            const teamId = group.dataset.teamId;
+            const cardSelect = group.querySelector(".card-select");
+            const targetSelect = group.querySelector(".target-select");
+            
+            bids[teamId] = {
+                cardId: cardSelect.value,
+                targetId: targetSelect.style.display !== "none" ? targetSelect.value : null
+            };
         });
         engine.submitCards(bids);
     });
@@ -85,7 +92,10 @@ function render() {
     } else if (state.phase === "ENCOUNTER_RESULT") {
         document.getElementById("result-list").innerHTML = state.teams
             .filter(t => t.selectedCardId)
-            .map(t => `<li><strong>${t.name}</strong> (卡${t.selectedCardId}): ${t.lastActionLog}</li>`)
+            .map(t => {
+                let targetText = t.selectedTargetId ? ` [目標: 小隊${t.selectedTargetId}]` : "";
+                return `<li><strong>${t.name}</strong> (卡${t.selectedCardId}${targetText}): ${t.lastActionLog}</li>`;
+            })
             .join("");
         document.getElementById("phase-encounter-result").style.display = "block";
     } else if (state.phase === "ROUND_END") {
@@ -98,27 +108,54 @@ function renderBidPhase(state) {
     if (m) {
         document.getElementById("bid-monster-name").textContent = m.name;
         document.getElementById("bid-monster-cards").innerHTML = m.cards.map(c => 
-            `<div><strong>卡 ${c.id}:</strong> ${c.desc} (HP-${c.damage}, +${c.coconut}椰${c.escape ? ', 逃跑' : ''})</div>`
+            `<div style="margin-bottom:0.5rem;"><strong>卡 ${c.id}:</strong> ${c.desc}</div>`
         ).join("");
     }
 
     const tbody = document.getElementById("bid-inputs-tbody");
+    
+    // Generate Target Options
+    let targetOptions = `<option value="">(選擇目標)</option>`;
+    state.teams.forEach(t => {
+        targetOptions += `<option value="${t.id}">${t.name} (${t.status})</option>`;
+    });
+
     tbody.innerHTML = state.teams.map(t => {
         if (t.status !== "active") return `<tr style="opacity:0.5"><td>${t.name} (${t.status})</td><td>-</td></tr>`;
         return `
             <tr>
                 <td><strong>${t.name}</strong> <br><small>HP: ${t.hp} | 袋中: ${t.roundCoconuts}</small></td>
                 <td>
-                    <select class="card-select" data-team-id="${t.id}">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
+                    <div class="card-select-group" data-team-id="${t.id}" style="display:flex; gap:0.5rem;">
+                        <select class="card-select form-input" onchange="toggleTarget(this, '${m.name}')">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                        <select class="target-select form-input" style="display:none;">
+                            ${targetOptions}
+                        </select>
+                    </div>
                 </td>
             </tr>
         `;
     }).join("");
+}
+
+window.toggleTarget = function(selectEl, monsterName) {
+    const val = selectEl.value;
+    const targetSelect = selectEl.parentElement.querySelector(".target-select");
+    
+    // 大祭司卡 4 或 海神卡 3 需要目標
+    if ((monsterName === "枯朽椰骸大祭司" && val == "4") || 
+        (monsterName === "海溝腐椰海神" && val == "3")) {
+        targetSelect.style.display = "block";
+        targetSelect.required = true;
+    } else {
+        targetSelect.style.display = "none";
+        targetSelect.required = false;
+    }
 }
 
 function nextEncounter() { engine.nextEncounter(); }
