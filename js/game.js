@@ -476,15 +476,9 @@ class GameEngine {
 
                     if (cid === 1) { 
                         coconuts[t.id] += 1; 
-                        if (counts[1] > counts[2]) {
-                            activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 1) damages[otherT.id] += 50; });
-                        }
                     }
                     else if (cid === 2) {
                         coconuts[t.id] += 2;
-                        if (counts[2] > counts[1]) {
-                            activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 2) damages[otherT.id] += 40; });
-                        }
                     }
                     else if (cid === 3) {
                         coconuts[t.id] += 3;
@@ -498,6 +492,13 @@ class GameEngine {
                         t.debuffs.seaGodCurse += 30;
                     }
                 });
+
+                if (counts[1] > counts[2]) {
+                    activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 1) damages[otherT.id] += 50; });
+                }
+                if (counts[2] > counts[1]) {
+                    activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 2) damages[otherT.id] += 40; });
+                }
                 break;
 
             case "椰子寶箱怪":
