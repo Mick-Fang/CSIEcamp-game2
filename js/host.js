@@ -61,7 +61,8 @@ function render() {
     const state = engine.state;
     
     document.querySelectorAll(".info-round").forEach(el => el.textContent = state.roundNum);
-    document.querySelectorAll(".info-encounter").forEach(el => el.textContent = state.encounterIndex + 1);
+    const displayNum = state.encounterIndex - (state.extraEncounters || 0) + 1;
+    document.querySelectorAll(".info-encounter").forEach(el => el.textContent = `${displayNum} / 11`);
 
     document.getElementById("battle-logs-box").innerHTML = state.battleLogs.map(l => `<div class="log-entry">${l}</div>`).join("");
 

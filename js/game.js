@@ -6,10 +6,10 @@ const MONSTERS = [
         img: "assets/slime_chief.png",
         desc: "由濃稠椰奶聚合而成的果凍狀怪物。",
         cards: [
-            { id: 1, desc: "如果這個選項最多人選，受到10點傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "如果這個選項最少人選，受到20點傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果這個選項最多人選，受到30點傷害。獲得三顆椰子", escape: false },
-            { id: 4, desc: "如果這個選項最少人選，受到40點傷害。逃跑。", escape: true }
+            { id: 1, desc: "如果這個選項最多隊伍選，受到10點傷害。獲得一顆椰子", escape: false },
+            { id: 2, desc: "如果這個選項最少隊伍選，受到20點傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果這個選項最多隊伍選，受到30點傷害。獲得三顆椰子", escape: false },
+            { id: 4, desc: "如果這個選項最少隊伍選，受到40點傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -18,9 +18,9 @@ const MONSTERS = [
         desc: "喜歡成群結隊在沙灘上惡作劇。",
         cards: [
             { id: 1, desc: "受到15點傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "選擇這個選項的人共同分攤35點傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果所有人都選這個選項，受到55點傷害。獲得三顆椰子", escape: false },
-            { id: 4, desc: "選擇這個選項的人共同分攤75點傷害。逃跑。", escape: true }
+            { id: 2, desc: "選擇這個選項的隊伍共同分攤35點傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果所有隊伍都選這個選項，受到55點傷害。獲得三顆椰子", escape: false },
+            { id: 4, desc: "選擇這個選項的隊伍共同分攤75點傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -29,8 +29,8 @@ const MONSTERS = [
         desc: "披著厚重椰棕的叢林巨獸。",
         cards: [
             { id: 1, desc: "受到20點傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "如果這回合有至少1人選擇逃跑，受到40點傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果這回合有至少2人選擇逃跑，受到80點傷害。獲得三顆椰子", escape: false },
+            { id: 2, desc: "如果這回合有至少1隊選擇逃跑，受到40點傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果這回合有至少2隊選擇逃跑，受到80點傷害。獲得三顆椰子", escape: false },
             { id: 4, desc: "受到10點傷害。逃跑。", escape: true }
         ]
     },
@@ -39,10 +39,10 @@ const MONSTERS = [
         img: "assets/troll_ogre.png",
         desc: "以堅硬無比的椰核為核心變異而成。",
         cards: [
-            { id: 1, desc: "如果這個選項有奇數個人選，受到25傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "如果這個選項有偶數個人選，受到50傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果這個選項有至少2人選，受到75傷害。獲得三顆椰子", escape: false },
-            { id: 4, desc: "如果這個選項有至少2人選，受到100傷害。逃跑。", escape: true }
+            { id: 1, desc: "如果這個選項有奇數隊選，受到25傷害。獲得一顆椰子", escape: false },
+            { id: 2, desc: "如果這個選項有偶數隊選，受到50傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果這個選項有至少2個隊伍選，受到75傷害。獲得三顆椰子", escape: false },
+            { id: 4, desc: "如果這個選項有至少2個隊伍選，受到100傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -64,7 +64,7 @@ const MONSTERS = [
             { id: 1, desc: "選擇此技能卡的隊伍中，椰子最多的那隊受到35傷害。獲得一顆椰子。", escape: false },
             { id: 2, desc: "選擇此技能卡的隊伍中，椰子最少的那隊受到70傷害。獲得兩顆椰子。", escape: false },
             { id: 3, desc: "本輪遊戲中你下次受到的傷害翻倍。獲得三顆椰子", escape: false },
-            { id: 4, desc: "每個選擇此選項的人各自對所有人造成10點傷害。逃跑。", escape: true }
+            { id: 4, desc: "每個選擇此選項的隊伍各自對所有人造成10點傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -74,7 +74,7 @@ const MONSTERS = [
         cards: [
             { id: 1, desc: "受到15點傷害。獲得一顆椰子", escape: false },
             { id: 2, desc: "受到5點傷害。本輪遊戲中你受到的一切傷害+5。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "受到35傷害，如果這個選項沒人選，再打一次風暴椰鱗巨翼龍。獲得三顆椰子", escape: false },
+            { id: 3, desc: "受到35傷害，如果這個選項沒隊伍選，再打一次風暴椰鱗巨翼龍。獲得三顆椰子", escape: false },
             { id: 4, desc: "受到35點傷害，逃跑。其他隊伍再打一次風暴椰鱗巨翼龍。", escape: true }
         ]
     },
@@ -105,18 +105,10 @@ const MONSTERS = [
         img: "assets/final_boss_ancestor.png",
         desc: "一切椰子的起源，神話級巨型椰子。",
         cards: [
-            { id: 1, desc: "如果沒人選這個選項，所有人受到90傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "如果沒人選這個選項，所有人受到90傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果沒人選這個選項，所有人受到90傷害。獲得三顆椰子", escape: false },
-            { id: 4, desc: "如果沒人選這個選項，所有人受到90傷害。逃跑。", escape: true }
-        ]
-    },
-    {
-        cards: [
-            { id: 1, desc: "如果沒人選這個選項，所有人受到90傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "如果沒人選這個選項，所有人受到90傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "如果沒人選這個選項，所有人受到90傷害。獲得三顆椰子", escape: false },
-            { id: 4, desc: "如果沒人選這個選項，所有人受到90傷害。逃跑。", escape: true }
+            { id: 1, desc: "如果沒隊伍選這個選項，所有人受到90傷害。獲得一顆椰子", escape: false },
+            { id: 2, desc: "如果沒隊伍選這個選項，所有人受到90傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果沒隊伍選這個選項，所有人受到90傷害。獲得三顆椰子", escape: false },
+            { id: 4, desc: "如果沒隊伍選這個選項，所有人受到90傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -228,18 +220,18 @@ class GameEngine {
             gameStartedBefore = true;
         } else {
             seq = Array.from({length: MONSTERS.length}, (_, i) => i);
+            const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
+            seq = seq.filter(idx => idx !== mimicIdx);
             for (let i = seq.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [seq[i], seq[j]] = [seq[j], seq[i]];
             }
-            const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
-            if (seq[0] === mimicIdx) {
-                [seq[0], seq[1]] = [seq[1], seq[0]];
-            }
+            seq.splice(5, 0, mimicIdx);
         }
         
         this.state.monsterSequence = seq;
         this.state.gameStartedBefore = gameStartedBefore;
+        this.state.extraEncounters = 0;
         this.state.roundNum = 1;
         this.state.encounterIndex = 0;
         this.state.phase = "ENCOUNTER_BID";
@@ -677,6 +669,7 @@ class GameEngine {
             const currentMonsterIdx = this.state.monsterSequence[this.state.encounterIndex];
             this.state.monsterSequence.splice(this.state.encounterIndex + 1, 0, currentMonsterIdx);
             this.state.dragonRepeatTriggered = false;
+            this.state.extraEncounters = (this.state.extraEncounters || 0) + 1;
             this.addLog("巨翼龍再次襲來！");
         }
 
@@ -696,13 +689,17 @@ class GameEngine {
         this.state.roundNum += 1;
         this.state.encounterIndex = 0;
         this.state.phase = "ENCOUNTER_BID";
+        this.state.extraEncounters = 0;
         
         // 生成新的原始序列
-        let seq = Array.from({ length: 10 }, (_, i) => i);
+        let seq = Array.from({ length: MONSTERS.length }, (_, i) => i);
+        const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
+        seq = seq.filter(idx => idx !== mimicIdx);
         for (let i = seq.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [seq[i], seq[j]] = [seq[j], seq[i]];
         }
+        seq.splice(5, 0, mimicIdx);
         this.state.monsterSequence = seq;
 
         this.state.teams.forEach(t => {
