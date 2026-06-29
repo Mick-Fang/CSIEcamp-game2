@@ -33,11 +33,26 @@ function render() {
             cardIndicator = `<div style="font-size: 1.1rem; color: #fde047; margin-bottom: 0.5rem; font-weight: bold;">(選擇卡片 ${t.selectedCardId})</div>`;
         }
 
+        let debuffList = [];
+        if (t.debuffs.crabDoubleNextBoss) debuffList.push("🦀受傷翻倍");
+        if (t.debuffs.dragonExtraDmg > 0) debuffList.push(`🌪️受傷額外+${t.debuffs.dragonExtraDmg}`);
+        if (t.debuffs.priestNextOpt1Dmg) debuffList.push("💀選卡1受傷+40");
+        if (t.debuffs.priestNextNotOpt2Dmg) debuffList.push("💀不選卡2受傷+40");
+        if (t.debuffs.seaGodCurse > 0) debuffList.push(`🌊遇海神受傷+${t.debuffs.seaGodCurse}`);
+
+        let debuffHtml = "";
+        if (debuffList.length > 0) {
+            debuffHtml = `<div style="margin-bottom: 0.5rem; font-size: 0.95rem; color: #fca5a5; background: rgba(239,68,68,0.15); padding: 4px; border-radius: 4px; border-left: 3px solid #ef4444;">
+                ${debuffList.map(d => `<div>${d}</div>`).join("")}
+            </div>`;
+        }
+
         return `
             <div class="team-box ${t.status}">
                 <h3 style="margin:0 0 0.5rem 0; color: #fff; font-size: 1.4rem;">${t.name}</h3>
                 <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.5rem; font-size: 1.2rem;">${statusText}</div>
                 ${cardIndicator}
+                ${debuffHtml}
                 <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">💖 HP: <span style="font-size:1.8rem; font-weight:bold;">${t.hp}</span></div>
                 <div style="font-size: 1.2rem;">🎒 袋中: <span style="font-size:1.8rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
                 <div style="margin-top: 1rem; font-size: 1.1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 總資產: <span style="color:#fff;">${t.totalCoconuts}</span></div>

@@ -61,8 +61,8 @@ const MONSTERS = [
         img: "assets/crab_rider.png",
         desc: "騎乘深海椰子蟹的怨靈。",
         cards: [
-            { id: 1, desc: "選擇這個選項的人中椰子最多的那人受到35傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "選擇這個選項的人中椰子最少的那人受到70傷害。獲得兩顆椰子", escape: false },
+            { id: 1, desc: "選擇此技能卡的隊伍中，椰子最多的那隊受到35傷害。獲得一顆椰子。", escape: false },
+            { id: 2, desc: "選擇此技能卡的隊伍中，椰子最少的那隊受到70傷害。獲得兩顆椰子。", escape: false },
             { id: 3, desc: "本輪遊戲中你下次受到的傷害翻倍。獲得三顆椰子", escape: false },
             { id: 4, desc: "每個選擇此選項的人各自對所有人造成10點傷害。逃跑。", escape: true }
         ]
@@ -109,6 +109,25 @@ const MONSTERS = [
             { id: 2, desc: "如果沒人選這個選項，所有人受到90傷害。獲得兩顆椰子", escape: false },
             { id: 3, desc: "如果沒人選這個選項，所有人受到90傷害。獲得三顆椰子", escape: false },
             { id: 4, desc: "如果沒人選這個選項，所有人受到90傷害。逃跑。", escape: true }
+        ]
+    },
+    {
+        cards: [
+            { id: 1, desc: "如果沒人選這個選項，所有人受到90傷害。獲得一顆椰子", escape: false },
+            { id: 2, desc: "如果沒人選這個選項，所有人受到90傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "如果沒人選這個選項，所有人受到90傷害。獲得三顆椰子", escape: false },
+            { id: 4, desc: "如果沒人選這個選項，所有人受到90傷害。逃跑。", escape: true }
+        ]
+    },
+    {
+        name: "椰子寶箱怪",
+        img: "assets/coconut_mimic.png",
+        desc: "偽裝成椰子的貪婪寶箱。",
+        cards: [
+            { id: 1, desc: "血量+30。獲得一顆椰子。", escape: false },
+            { id: 2, desc: "每個選擇此選項的隊伍指定另一人回滿血。獲得兩顆椰子。", escape: false, requireTarget: true },
+            { id: 3, desc: "每個選擇此選項的隊伍指定另一人+3$。獲得三顆椰子。", escape: false, requireTarget: true },
+            { id: 4, desc: "失去3顆椰子。逃跑。", escape: true }
         ]
     }
 ];
@@ -179,6 +198,8 @@ class GameEngine {
     }
 
     initTeams(names) {
+        let gameStartedBefore = this.state ? this.state.gameStartedBefore : false;
+
         this.state.teams.forEach((t, i) => {
             t.name = names[i] || `第 ${i + 1} 小隊`;
             t.hp = 100;
@@ -187,20 +208,42 @@ class GameEngine {
             t.status = "active";
             t.selectedCardId = null;
             t.lastActionLog = "";
+            t.debuffs = {
+                crabDoubleNextBoss: false,
+                dragonExtraDmg: 0,
+                priestNextOpt1Dmg: false,
+                priestNextNotOpt2Dmg: false,
+                seaGodCurse: 0
+            };
         });
         
-        // 產生固定隨機序列
-        let seq = Array.from({ length: 10 }, (_, i) => i);
-        for (let i = seq.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [seq[i], seq[j]] = [seq[j], seq[i]];
+        let seq = [];
+        if (!gameStartedBefore) {
+            const firstNames = [
+                "椰漿軟泥酋長", "椰殼小妖頭目", "狂野椰棕猛獸", "鐵殼椰核食人魔", 
+                "遠古珊瑚椰石像", "椰子寶箱怪", "黑潮椰蟹騎士", "風暴椰鱗巨翼龍", 
+                "枯朽椰骸大祭司", "海溝腐椰海神", "終焉滅世巨椰祖靈"
+            ];
+            seq = firstNames.map(n => MONSTERS.findIndex(m => m.name === n)).filter(idx => idx !== -1);
+            gameStartedBefore = true;
+        } else {
+            seq = Array.from({length: MONSTERS.length}, (_, i) => i);
+            for (let i = seq.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [seq[i], seq[j]] = [seq[j], seq[i]];
+            }
+            const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
+            if (seq[0] === mimicIdx) {
+                [seq[0], seq[1]] = [seq[1], seq[0]];
+            }
         }
-        this.state.monsterSequence = seq;
         
+        this.state.monsterSequence = seq;
+        this.state.gameStartedBefore = gameStartedBefore;
         this.state.roundNum = 1;
         this.state.encounterIndex = 0;
         this.state.phase = "ENCOUNTER_BID";
-        this.state.battleLogs = ["遊戲開始！已生成未知的怪物序列。"];
+        this.state.battleLogs = ["遊戲開始！已生成怪物序列。"];
         this.addLog(`第 1 回合開始，遭遇第一隻怪物！`);
         this.saveState();
     }
@@ -242,6 +285,12 @@ class GameEngine {
             if (sel) {
                 t.selectedCardId = parseInt(sel.cardId);
                 t.selectedTargetId = sel.targetId ? parseInt(sel.targetId) : null;
+            }
+
+            // 提前結算原本就有的海神詛咒，避免吃到當回合剛獲得的新詛咒
+            if (monster.name === "海溝腐椰海神" && t.debuffs.seaGodCurse > 0) {
+                damages[t.id] += t.debuffs.seaGodCurse;
+                logs[t.id].push(`海神詛咒發作(+${t.debuffs.seaGodCurse})`);
             }
         });
 
@@ -451,6 +500,56 @@ class GameEngine {
                 });
                 break;
 
+            case "椰子寶箱怪":
+                let mimicHealTargets = [];
+                let mimicCocoTargets = [];
+                activeTeams.forEach(t => {
+                    const cid = t.selectedCardId;
+                    if (!cid) return;
+                    if (cid === 1) { 
+                        coconuts[t.id] += 1; 
+                        damages[t.id] -= 30; // negative damage is healing
+                        logs[t.id].push("回復30血量");
+                    }
+                    else if (cid === 2) { 
+                        coconuts[t.id] += 2;
+                        if (t.selectedTargetId) {
+                            mimicHealTargets.push(t.selectedTargetId);
+                            logs[t.id].push(`指定第${t.selectedTargetId}隊回滿血`);
+                        }
+                    }
+                    else if (cid === 3) { 
+                        coconuts[t.id] += 3;
+                        if (t.selectedTargetId) {
+                            mimicCocoTargets.push(t.selectedTargetId);
+                            logs[t.id].push(`指定第${t.selectedTargetId}隊獲得3顆椰子`);
+                        }
+                    }
+                    else if (cid === 4) { 
+                        escapes[t.id] = true; 
+                        coconuts[t.id] -= 3;
+                        logs[t.id].push("失去3顆椰子並逃跑");
+                    }
+                });
+                mimicHealTargets.forEach(tid => {
+                    const target = activeTeams.find(x => x.id === tid);
+                    if (target) {
+                        target.pendingHealFull = true;
+                        if(!logs[tid]) logs[tid] = [];
+                        logs[tid].push("被指定回滿血");
+                    }
+                });
+                mimicCocoTargets.forEach(tid => {
+                    const target = activeTeams.find(x => x.id === tid);
+                    if (target) {
+                        if(coconuts[tid] === undefined) coconuts[tid] = 0;
+                        coconuts[tid] += 3;
+                        if(!logs[tid]) logs[tid] = [];
+                        logs[tid].push("被指定獲得3顆椰子");
+                    }
+                });
+                break;
+
             case "終焉滅世巨椰祖靈":
                 let ancestorDamage = 0;
                 if (counts[1] === 0) ancestorDamage += 90;
@@ -478,12 +577,6 @@ class GameEngine {
         activeTeams.forEach(t => {
             const cid = t.selectedCardId;
             if (!cid) { t.lastActionLog = "未選擇有效卡片"; return; }
-
-            // 永久海神詛咒
-            if (monster.name === "海溝腐椰海神" && t.debuffs.seaGodCurse > 0) {
-                damages[t.id] += t.debuffs.seaGodCurse;
-                logs[t.id].push(`海神詛咒(+${t.debuffs.seaGodCurse})`);
-            }
 
             // 石像加成
             if (globalBuff) {

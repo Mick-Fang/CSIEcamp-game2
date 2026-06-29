@@ -147,9 +147,10 @@ window.toggleTarget = function(selectEl, monsterName) {
     const val = selectEl.value;
     const targetSelect = selectEl.parentElement.querySelector(".target-select");
     
-    // 大祭司卡 4 或 海神卡 3 需要目標
+    // 大祭司卡 4 或 海神卡 3 或 寶箱怪 2, 3 需要目標
     if ((monsterName === "枯朽椰骸大祭司" && val == "4") || 
-        (monsterName === "海溝腐椰海神" && val == "3")) {
+        (monsterName === "海溝腐椰海神" && val == "3") ||
+        (monsterName === "椰子寶箱怪" && (val == "2" || val == "3"))) {
         targetSelect.style.display = "block";
         targetSelect.required = true;
     } else {
