@@ -258,7 +258,6 @@ class GameEngine {
         const monster = this.getCurrentMonster();
         if (!monster) return;
 
-        let damages = {};
         let coconuts = {};
         let escapes = {};
         let logs = {};
@@ -268,25 +267,70 @@ class GameEngine {
 
         activeTeams.forEach(t => {
             activeCountBefore++;
-            damages[t.id] = 0;
             coconuts[t.id] = 0;
             escapes[t.id] = false;
             logs[t.id] = [];
+            t.debuffsAppliedThisRound = false;
+            t.pendingHealFull = false;
             
             const sel = cardSelections[t.id];
             if (sel) {
                 t.selectedCardId = parseInt(sel.cardId);
                 t.selectedTargetId = sel.targetId ? parseInt(sel.targetId) : null;
-            }
-
-            // 提前結算原本就有的海神詛咒，避免吃到當回合剛獲得的新詛咒
-            if (monster.name === "海溝腐椰海神" && t.debuffs.seaGodCurse > 0) {
-                damages[t.id] += t.debuffs.seaGodCurse;
-                logs[t.id].push(`海神詛咒發作(+${t.debuffs.seaGodCurse})`);
+            } else {
+                t.selectedCardId = null;
+                t.selectedTargetId = null;
             }
         });
 
-        // 1. 計算選項統計
+        const monsterIdx = this.state.monsterSequence[this.state.encounterIndex];
+        const globalBuff = this.state.globalBuffs[monsterIdx];
+
+        const applyDamage = (t, amount, logMsg) => {
+            if (amount <= 0) return;
+            let finalDmg = amount;
+            
+            if (!t.debuffsAppliedThisRound) {
+                t.debuffsAppliedThisRound = true;
+                
+                if (globalBuff) {
+                    if (globalBuff.all > 0) { finalDmg += globalBuff.all; logs[t.id].push(`石像共鳴(+${globalBuff.all})`); }
+                    if (globalBuff.opt1 > 0 && t.selectedCardId === 1) { finalDmg += globalBuff.opt1; logs[t.id].push(`石像共鳴(+${globalBuff.opt1})`); }
+                }
+
+                if (t.debuffs.priestNextOpt1Dmg && t.selectedCardId === 1) { finalDmg += 40; logs[t.id].push(`祭司詛咒(+40)`); }
+                if (t.debuffs.priestNextNotOpt2Dmg && t.selectedCardId !== 2) { finalDmg += 40; logs[t.id].push(`祭司詛咒(+40)`); }
+                t.debuffs.priestNextOpt1Dmg = false;
+                t.debuffs.priestNextNotOpt2Dmg = false;
+
+                if (t.debuffs.dragonExtraDmg > 0) { finalDmg += t.debuffs.dragonExtraDmg; logs[t.id].push(`巨翼龍印記(+${t.debuffs.dragonExtraDmg})`); }
+
+                if (t.debuffs.crabDoubleNextBoss) {
+                    finalDmg *= 2;
+                    logs[t.id].push(`螃蟹印記: 傷害翻倍!`);
+                }
+                t.debuffs.crabDoubleNextBoss = false;
+            }
+
+            t.hp -= finalDmg;
+            if (logMsg) logs[t.id].push(logMsg);
+            logs[t.id].push(`受到 ${finalDmg} 傷害(餘${t.hp})`);
+        };
+
+        const applyHeal = (t, amount, logMsg) => {
+            t.hp += amount;
+            if (logMsg) logs[t.id].push(logMsg);
+            logs[t.id].push(`回復 ${amount} 血量(餘${t.hp})`);
+        };
+
+        // Phase 0: Pre-encounter debuffs
+        activeTeams.forEach(t => {
+            if (monster.name === "海溝腐椰海神" && t.debuffs.seaGodCurse > 0) {
+                applyDamage(t, t.debuffs.seaGodCurse, "海神開場詛咒發作");
+            }
+        });
+
+        // 1. Calculate Option Counts
         let counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
         activeTeams.forEach(t => {
             if (t.selectedCardId) counts[t.selectedCardId]++;
@@ -301,315 +345,213 @@ class GameEngine {
 
         this.state.dragonRepeatTriggered = false;
 
-        // 2. 處理怪物專屬邏輯
-        switch(monster.name) {
-            case "椰漿軟泥酋長":
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; if (counts[1] === maxVotes) damages[t.id] += 10; }
-                    else if (cid === 2) { coconuts[t.id] += 2; if (counts[2] === minVotes) damages[t.id] += 20; }
-                    else if (cid === 3) { coconuts[t.id] += 3; if (counts[3] === maxVotes) damages[t.id] += 30; }
-                    else if (cid === 4) { escapes[t.id] = true; if (counts[4] === minVotes) damages[t.id] += 40; }
-                });
-                break;
+        // 2. Sequential Processing
+        // PHASE 1
+        activeTeams.forEach(t => {
+            if (t.selectedCardId === 1) {
+                coconuts[t.id] += 1;
+                if (monster.name === "椰漿軟泥酋長" && counts[1] === maxVotes) applyDamage(t, 10);
+                if (monster.name === "椰殼小妖頭目") applyDamage(t, 15);
+                if (monster.name === "狂野椰棕猛獸") applyDamage(t, 20);
+                if (monster.name === "鐵殼椰核食人魔" && counts[1] % 2 !== 0) applyDamage(t, 25);
+                if (monster.name === "椰子寶箱怪") applyHeal(t, 30);
+                if (monster.name === "風暴椰鱗巨翼龍") applyDamage(t, 15);
+                if (monster.name === "枯朽椰骸大祭司") { applyDamage(t, 40); t.debuffs.priestNextOpt1Dmg = true; }
+            }
+        });
 
-            case "椰殼小妖頭目":
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; damages[t.id] += 15; }
-                    else if (cid === 2) { coconuts[t.id] += 2; damages[t.id] += Math.round(35 / counts[2]); }
-                    else if (cid === 3) { coconuts[t.id] += 3; if (counts[3] === activeTeams.length) damages[t.id] += 55; }
-                    else if (cid === 4) { escapes[t.id] = true; damages[t.id] += Math.round(75 / counts[4]); }
-                });
-                break;
-
-            case "狂野椰棕猛獸":
-                let someoneEscaped = counts[4] >= 1;
-                let twoEscaped = counts[4] >= 2;
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; damages[t.id] += 20; }
-                    else if (cid === 2) { coconuts[t.id] += 2; if (someoneEscaped) damages[t.id] += 40; }
-                    else if (cid === 3) { coconuts[t.id] += 3; if (twoEscaped) damages[t.id] += 80; }
-                    else if (cid === 4) { escapes[t.id] = true; damages[t.id] += 10; }
-                });
-                break;
-
-            case "鐵殼椰核食人魔":
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; if (counts[1] % 2 !== 0) damages[t.id] += 25; }
-                    else if (cid === 2) { coconuts[t.id] += 2; if (counts[2] > 0 && counts[2] % 2 === 0) damages[t.id] += 50; }
-                    else if (cid === 3) { coconuts[t.id] += 3; if (counts[3] >= 2) damages[t.id] += 75; }
-                    else if (cid === 4) { escapes[t.id] = true; if (counts[4] >= 2) damages[t.id] += 100; }
-                });
-                break;
-
-            case "遠古珊瑚椰石像":
-                let prevOpt3 = this.state.golemCounters.opt3;
-                let prevOpt4 = this.state.golemCounters.opt4;
-
-                this.state.golemCounters.opt1 += counts[1];
-                this.state.golemCounters.opt2 += counts[2];
-                this.state.golemCounters.opt3 += counts[3];
-                this.state.golemCounters.opt4 += counts[4];
-
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    
-                    if (cid === 1) {
-                        coconuts[t.id] += 1;
-                        if (this.state.golemCounters.opt1 >= 10) damages[t.id] += 100;
-                    }
-                    else if (cid === 2) {
-                        coconuts[t.id] += 2;
-                        if (this.state.golemCounters.opt2 >= 8) damages[t.id] += 80;
-                    }
-                    else if (cid === 3) {
-                        coconuts[t.id] += 3;
-                    }
-                    else if (cid === 4) {
-                        escapes[t.id] = true;
-                    }
-                });
-
-                if (counts[3] > 0) {
-                    for (let i = prevOpt3 + 1; i <= this.state.golemCounters.opt3; i++) {
-                        if (i >= 6) {
-                            const nextIdx = this.getNextMonsterIndexInSequence();
-                            if (nextIdx !== null) {
-                                if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                                this.state.globalBuffs[nextIdx].all += 20;
-                            }
-                        }
-                    }
-                }
-                if (counts[4] > 0) {
-                    for (let i = prevOpt4 + 1; i <= this.state.golemCounters.opt4; i++) {
-                        if (i >= 4) {
-                            const nextIdx = this.getNextMonsterIndexInSequence();
-                            if (nextIdx !== null) {
-                                if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                                this.state.globalBuffs[nextIdx].opt1 += 20;
-                            }
-                        }
-                    }
-                }
-                break;
-
-            case "黑潮椰蟹騎士":
-                let crabAoeDamage = 0;
-                let opt1Teams = activeTeams.filter(t => t.selectedCardId === 1);
-                let opt2Teams = activeTeams.filter(t => t.selectedCardId === 2);
-                
-                let maxCoco = -1;
-                opt1Teams.forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c > maxCoco) maxCoco = c; });
-                
-                let minCoco = 99999;
-                opt2Teams.forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c < minCoco) minCoco = c; });
-
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { 
-                        coconuts[t.id] += 1; 
-                        if ((t.totalCoconuts + t.roundCoconuts) === maxCoco) damages[t.id] += 35; 
-                    }
-                    else if (cid === 2) { 
-                        coconuts[t.id] += 2; 
-                        if ((t.totalCoconuts + t.roundCoconuts) === minCoco) damages[t.id] += 70; 
-                    }
-                    else if (cid === 3) { coconuts[t.id] += 3; t.debuffs.crabDoubleNextBoss = true; logs[t.id].push("下次受傷翻倍"); }
-                    else if (cid === 4) { escapes[t.id] = true; crabAoeDamage += 10; logs[t.id].push("對所有人造成10傷害"); }
-                });
-                if (crabAoeDamage > 0) {
-                    activeTeams.forEach(t => { damages[t.id] += crabAoeDamage; });
-                }
-                break;
-
-            case "風暴椰鱗巨翼龍":
-                if (counts[3] === 0 || counts[4] > 0) {
-                    this.state.dragonRepeatTriggered = true;
-                }
-
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; damages[t.id] += 15; }
-                    else if (cid === 2) { coconuts[t.id] += 2; damages[t.id] += 5; t.debuffs.dragonExtraDmg += 5; }
-                    else if (cid === 3) { coconuts[t.id] += 3; damages[t.id] += 35; }
-                    else if (cid === 4) { escapes[t.id] = true; damages[t.id] += 35; }
-                });
-                break;
-
-            case "枯朽椰骸大祭司":
-                let minHp = 999;
-                activeTeams.forEach(t => { if (t.selectedCardId === 3 && t.hp < minHp) minHp = t.hp; });
-
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-
-                    if (cid === 1) { coconuts[t.id] += 1; damages[t.id] += 40; t.debuffs.priestNextOpt1Dmg = true; }
-                    else if (cid === 2) { coconuts[t.id] += 2; damages[t.id] += 40; t.debuffs.priestNextNotOpt2Dmg = true; }
-                    else if (cid === 3) { coconuts[t.id] += 3; if (t.hp > minHp) damages[t.id] += 80; }
-                    else if (cid === 4) { 
-                        escapes[t.id] = true; damages[t.id] += 40;
-                        if (t.selectedTargetId) {
-                            const targetTeam = this.state.teams.find(tm => tm.id === t.selectedTargetId);
-                            if (targetTeam && targetTeam.status !== "active") {
-                                targetTeam.status = "active";
-                                targetTeam.hp = 40;
-                                targetTeam.roundCoconuts = 0;
-                                logs[t.id].push(`復活了 ${targetTeam.name}`);
-                                this.addLog(`大祭司巫術：【${targetTeam.name}】被復活了！`);
-                            }
-                        }
-                    }
-                });
-                break;
-
-            case "海溝腐椰海神":
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-
-                    if (cid === 1) { 
-                        coconuts[t.id] += 1; 
-                    }
-                    else if (cid === 2) {
-                        coconuts[t.id] += 2;
-                    }
-                    else if (cid === 3) {
-                        coconuts[t.id] += 3;
-                        if (t.selectedTargetId && damages[t.selectedTargetId] !== undefined) {
-                            damages[t.selectedTargetId] += 10;
-                            logs[t.id].push(`指定小隊 ${t.selectedTargetId} 受傷`);
-                        }
-                    }
-                    else if (cid === 4) {
-                        escapes[t.id] = true; damages[t.id] += 30;
-                        t.debuffs.seaGodCurse += 30;
-                    }
-                });
-
-                if (counts[1] > counts[2]) {
-                    activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 1) damages[otherT.id] += 50; });
-                }
-                if (counts[2] > counts[1]) {
-                    activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 2) damages[otherT.id] += 40; });
-                }
-                break;
-
-            case "椰子寶箱怪":
-                let mimicHealTargets = [];
-                let mimicCocoTargets = [];
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { 
-                        coconuts[t.id] += 1; 
-                        damages[t.id] -= 30; // negative damage is healing
-                        logs[t.id].push("回復30血量");
-                    }
-                    else if (cid === 2) { 
-                        coconuts[t.id] += 2;
-                        if (t.selectedTargetId) {
-                            mimicHealTargets.push(t.selectedTargetId);
-                            logs[t.id].push(`指定第${t.selectedTargetId}隊回滿血`);
-                        }
-                    }
-                    else if (cid === 3) { 
-                        coconuts[t.id] += 3;
-                        if (t.selectedTargetId) {
-                            mimicCocoTargets.push(t.selectedTargetId);
-                            logs[t.id].push(`指定第${t.selectedTargetId}隊獲得3顆椰子`);
-                        }
-                    }
-                    else if (cid === 4) { 
-                        escapes[t.id] = true; 
-                        coconuts[t.id] -= 3;
-                        logs[t.id].push("失去3顆椰子並逃跑");
-                    }
-                });
-                mimicHealTargets.forEach(tid => {
-                    const target = activeTeams.find(x => x.id === tid);
-                    if (target) {
-                        target.pendingHealFull = true;
-                        if(!logs[tid]) logs[tid] = [];
-                        logs[tid].push("被指定回滿血");
-                    }
-                });
-                mimicCocoTargets.forEach(tid => {
-                    const target = activeTeams.find(x => x.id === tid);
-                    if (target) {
-                        if(coconuts[tid] === undefined) coconuts[tid] = 0;
-                        coconuts[tid] += 3;
-                        if(!logs[tid]) logs[tid] = [];
-                        logs[tid].push("被指定獲得3顆椰子");
-                    }
-                });
-                break;
-
-            case "終焉滅世巨椰祖靈":
-                let ancestorDamage = 0;
-                if (counts[1] === 0) ancestorDamage += 90;
-                if (counts[2] === 0) ancestorDamage += 90;
-                if (counts[3] === 0) ancestorDamage += 90;
-                if (counts[4] === 0) ancestorDamage += 90;
-
-                activeTeams.forEach(t => {
-                    const cid = t.selectedCardId;
-                    if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; }
-                    else if (cid === 2) { coconuts[t.id] += 2; }
-                    else if (cid === 3) { coconuts[t.id] += 3; }
-                    else if (cid === 4) { escapes[t.id] = true; }
-                    damages[t.id] += ancestorDamage;
-                });
-                if (ancestorDamage > 0) this.addLog(`祖靈震怒：所有人承受 ${ancestorDamage} 點毀滅傷害！`);
-                break;
+        if (monster.name === "遠古珊瑚椰石像") {
+            this.state.golemCounters.opt1 += counts[1];
+            if (this.state.golemCounters.opt1 >= 10) {
+                activeTeams.forEach(t => { if (t.selectedCardId === 1) applyDamage(t, 100); });
+            }
+        }
+        if (monster.name === "黑潮椰蟹騎士") {
+            let maxCoco = -1;
+            activeTeams.filter(t => t.selectedCardId === 1).forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c > maxCoco) maxCoco = c; });
+            activeTeams.forEach(t => {
+                if (t.selectedCardId === 1 && (t.totalCoconuts + t.roundCoconuts) === maxCoco) applyDamage(t, 35);
+            });
+        }
+        if (monster.name === "海溝腐椰海神") {
+            if (counts[1] > counts[2]) {
+                activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 1) applyDamage(otherT, 50, "海神卡1範圍傷"); });
+            }
+        }
+        if (monster.name === "終焉滅世巨椰祖靈") {
+            if (counts[1] === 0) {
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡1制裁"));
+                this.addLog("祖靈震怒：卡1無人選擇，所有人承受 90 點傷害！");
+            }
         }
 
-        // 3. 統一扣血與結算
-        const monsterIdx = this.state.monsterSequence[this.state.encounterIndex];
-        const globalBuff = this.state.globalBuffs[monsterIdx];
+        // PHASE 2
+        activeTeams.forEach(t => {
+            if (t.selectedCardId === 2) {
+                coconuts[t.id] += 2;
+                if (monster.name === "椰漿軟泥酋長" && counts[2] === minVotes) applyDamage(t, 20);
+                if (monster.name === "椰殼小妖頭目") applyDamage(t, Math.round(35 / counts[2]));
+                if (monster.name === "狂野椰棕猛獸" && counts[4] >= 1) applyDamage(t, 40);
+                if (monster.name === "鐵殼椰核食人魔" && counts[2] > 0 && counts[2] % 2 === 0) applyDamage(t, 50);
+                if (monster.name === "椰子寶箱怪") {
+                    if (t.selectedTargetId) {
+                        const target = activeTeams.find(x => x.id === t.selectedTargetId);
+                        if (target) {
+                            target.pendingHealFull = true;
+                            logs[t.id].push(`指定第${t.selectedTargetId}隊回滿血`);
+                            if(!logs[target.id]) logs[target.id] = [];
+                            logs[target.id].push("被寶箱怪指定回滿血");
+                        }
+                    }
+                }
+                if (monster.name === "風暴椰鱗巨翼龍") { applyDamage(t, 5); t.debuffs.dragonExtraDmg += 5; }
+                if (monster.name === "枯朽椰骸大祭司") { applyDamage(t, 40); t.debuffs.priestNextNotOpt2Dmg = true; }
+            }
+        });
+
+        if (monster.name === "遠古珊瑚椰石像") {
+            this.state.golemCounters.opt2 += counts[2];
+            if (this.state.golemCounters.opt2 >= 8) {
+                activeTeams.forEach(t => { if (t.selectedCardId === 2) applyDamage(t, 80); });
+            }
+        }
+        if (monster.name === "黑潮椰蟹騎士") {
+            let minCoco = 99999;
+            activeTeams.filter(t => t.selectedCardId === 2).forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c < minCoco) minCoco = c; });
+            activeTeams.forEach(t => {
+                if (t.selectedCardId === 2 && (t.totalCoconuts + t.roundCoconuts) === minCoco) applyDamage(t, 70);
+            });
+        }
+        if (monster.name === "海溝腐椰海神") {
+            if (counts[2] > counts[1]) {
+                activeTeams.forEach(otherT => { if (otherT.selectedCardId !== 2) applyDamage(otherT, 40, "海神卡2範圍傷"); });
+            }
+        }
+        if (monster.name === "終焉滅世巨椰祖靈") {
+            if (counts[2] === 0) {
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡2制裁"));
+                this.addLog("祖靈震怒：卡2無人選擇，所有人承受 90 點傷害！");
+            }
+        }
+
+        // PHASE 3
+        let priestMinHp = 999;
+        if (monster.name === "枯朽椰骸大祭司") {
+            activeTeams.forEach(t => { if (t.selectedCardId === 3 && t.hp < priestMinHp) priestMinHp = t.hp; });
+        }
 
         activeTeams.forEach(t => {
-            const cid = t.selectedCardId;
-            if (!cid) { t.lastActionLog = "未選擇有效卡片"; return; }
-
-            // 石像加成
-            if (globalBuff) {
-                if (globalBuff.all > 0) { damages[t.id] += globalBuff.all; logs[t.id].push(`石像共鳴(+${globalBuff.all})`); }
-                if (globalBuff.opt1 > 0 && cid === 1) { damages[t.id] += globalBuff.opt1; logs[t.id].push(`石像共鳴(+${globalBuff.opt1})`); }
+            if (t.selectedCardId === 3) {
+                coconuts[t.id] += 3;
+                if (monster.name === "椰漿軟泥酋長" && counts[3] === maxVotes) applyDamage(t, 30);
+                if (monster.name === "椰殼小妖頭目" && counts[3] === activeTeams.length) applyDamage(t, 55);
+                if (monster.name === "狂野椰棕猛獸" && counts[4] >= 2) applyDamage(t, 80);
+                if (monster.name === "鐵殼椰核食人魔" && counts[3] >= 2) applyDamage(t, 75);
+                if (monster.name === "椰子寶箱怪") {
+                    if (t.selectedTargetId) {
+                        const target = activeTeams.find(x => x.id === t.selectedTargetId);
+                        if (target) {
+                            if(coconuts[target.id] === undefined) coconuts[target.id] = 0;
+                            coconuts[target.id] += 3;
+                            logs[t.id].push(`指定第${t.selectedTargetId}隊獲得3顆椰子`);
+                            if(!logs[target.id]) logs[target.id] = [];
+                            logs[target.id].push("被寶箱怪指定獲得3顆椰子");
+                        }
+                    }
+                }
+                if (monster.name === "黑潮椰蟹騎士") { t.debuffs.crabDoubleNextBoss = true; logs[t.id].push("下次受傷翻倍"); }
+                if (monster.name === "風暴椰鱗巨翼龍") applyDamage(t, 35);
+                if (monster.name === "枯朽椰骸大祭司" && t.hp > priestMinHp) applyDamage(t, 80);
+                if (monster.name === "海溝腐椰海神") {
+                    if (t.selectedTargetId) {
+                        const target = activeTeams.find(x => x.id === t.selectedTargetId);
+                        if (target) { applyDamage(target, 10, "海神卡3指定傷害"); logs[t.id].push(`指定第${t.selectedTargetId}隊受傷`); }
+                    }
+                }
             }
+        });
 
-            // 祭司加成
-            if (t.debuffs.priestNextOpt1Dmg && cid === 1) { damages[t.id] += 40; logs[t.id].push(`祭司詛咒(+40)`); }
-            if (t.debuffs.priestNextNotOpt2Dmg && cid !== 2) { damages[t.id] += 40; logs[t.id].push(`祭司詛咒(+40)`); }
-            t.debuffs.priestNextOpt1Dmg = false;
-            t.debuffs.priestNextNotOpt2Dmg = false;
-
-            // 巨翼龍加成
-            if (t.debuffs.dragonExtraDmg > 0 && damages[t.id] > 0) { damages[t.id] += t.debuffs.dragonExtraDmg; }
-
-            // 螃蟹翻倍
-            if (t.debuffs.crabDoubleNextBoss && damages[t.id] > 0) {
-                damages[t.id] *= 2;
-                logs[t.id].push(`螃蟹印記: 傷害翻倍!`);
+        if (monster.name === "遠古珊瑚椰石像" && counts[3] > 0) {
+            let prevOpt3 = this.state.golemCounters.opt3;
+            this.state.golemCounters.opt3 += counts[3];
+            for (let i = prevOpt3 + 1; i <= this.state.golemCounters.opt3; i++) {
+                if (i >= 6) {
+                    const nextIdx = this.getNextMonsterIndexInSequence();
+                    if (nextIdx !== null) {
+                        if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
+                        this.state.globalBuffs[nextIdx].all += 20;
+                    }
+                }
             }
-            t.debuffs.crabDoubleNextBoss = false;
+        }
+        if (monster.name === "風暴椰鱗巨翼龍" && counts[3] === 0) this.state.dragonRepeatTriggered = true;
+        if (monster.name === "終焉滅世巨椰祖靈") {
+            if (counts[3] === 0) {
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡3制裁"));
+                this.addLog("祖靈震怒：卡3無人選擇，所有人承受 90 點傷害！");
+            }
+        }
 
-            // 執行傷害
-            if (damages[t.id] > 0) {
-                t.hp -= damages[t.id];
-                logs[t.id].unshift(`受到 ${damages[t.id]} 傷害`);
+        // PHASE 4
+        activeTeams.forEach(t => {
+            if (t.selectedCardId === 4) {
+                escapes[t.id] = true;
+                if (monster.name === "椰漿軟泥酋長" && counts[4] === minVotes) applyDamage(t, 40);
+                if (monster.name === "椰殼小妖頭目") applyDamage(t, Math.round(75 / counts[4]));
+                if (monster.name === "狂野椰棕猛獸") applyDamage(t, 10);
+                if (monster.name === "鐵殼椰核食人魔" && counts[4] >= 2) applyDamage(t, 100);
+                if (monster.name === "椰子寶箱怪") { coconuts[t.id] -= 3; logs[t.id].push("失去3顆椰子"); }
+                if (monster.name === "黑潮椰蟹騎士") {
+                    logs[t.id].push("對所有人造成10傷害");
+                    activeTeams.forEach(otherT => applyDamage(otherT, 10, "黑潮椰蟹卡4範圍傷"));
+                }
+                if (monster.name === "風暴椰鱗巨翼龍") applyDamage(t, 35);
+                if (monster.name === "枯朽椰骸大祭司") {
+                    applyDamage(t, 40);
+                    if (t.selectedTargetId) {
+                        const targetTeam = this.state.teams.find(tm => tm.id === t.selectedTargetId);
+                        if (targetTeam && (targetTeam.status === "dead" || targetTeam.hp <= 0)) {
+                            targetTeam.status = "active";
+                            targetTeam.hp = 40;
+                            targetTeam.roundCoconuts = 0;
+                            logs[t.id].push(`復活了 ${targetTeam.name}`);
+                            this.addLog(`大祭司巫術：【${targetTeam.name}】被復活了！`);
+                        }
+                    }
+                }
+                if (monster.name === "海溝腐椰海神") { applyDamage(t, 30); t.debuffs.seaGodCurse += 30; }
+            }
+        });
+
+        if (monster.name === "遠古珊瑚椰石像" && counts[4] > 0) {
+            let prevOpt4 = this.state.golemCounters.opt4;
+            this.state.golemCounters.opt4 += counts[4];
+            for (let i = prevOpt4 + 1; i <= this.state.golemCounters.opt4; i++) {
+                if (i >= 4) {
+                    const nextIdx = this.getNextMonsterIndexInSequence();
+                    if (nextIdx !== null) {
+                        if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
+                        this.state.globalBuffs[nextIdx].opt1 += 20;
+                    }
+                }
+            }
+        }
+        if (monster.name === "風暴椰鱗巨翼龍" && counts[4] > 0) this.state.dragonRepeatTriggered = true;
+        if (monster.name === "終焉滅世巨椰祖靈") {
+            if (counts[4] === 0) {
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡4制裁"));
+                this.addLog("祖靈震怒：卡4無人選擇，所有人承受 90 點傷害！");
+            }
+        }
+
+        // 3. Finalization
+        activeTeams.forEach(t => {
+            if (!t.selectedCardId) { t.lastActionLog = "未選擇有效卡片"; return; }
+
+            // Apply pending full heal
+            if (t.pendingHealFull) {
+                t.hp = 100;
+                t.pendingHealFull = false;
             }
 
             if (t.hp <= 0) {
@@ -619,9 +561,10 @@ class GameEngine {
                 t.lastActionLog = `${logs[t.id].join(', ')} -> 陣亡！`;
                 this.addLog(`【${t.name}】陣亡了！`);
             } else {
-                if (coconuts[t.id] > 0) {
+                if (coconuts[t.id] > 0 || coconuts[t.id] < 0) {
                     t.roundCoconuts += coconuts[t.id];
-                    logs[t.id].push(`+${coconuts[t.id]}$`);
+                    if (t.roundCoconuts < 0) t.roundCoconuts = 0;
+                    logs[t.id].push(coconuts[t.id] > 0 ? `+${coconuts[t.id]}$` : `${coconuts[t.id]}$`);
                 }
                 if (escapes[t.id]) {
                     t.status = "escaped";
