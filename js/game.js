@@ -61,10 +61,10 @@ const MONSTERS = [
         img: "assets/crab_rider.png",
         desc: "騎乘深海椰子蟹的怨靈。",
         cards: [
-            { id: 1, desc: "若選技能卡2至少有2個隊伍選，受到35傷害。獲得一顆椰子", escape: false },
-            { id: 2, desc: "若選技能卡1至少有4個隊伍選，受到70傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "本輪遊戲中你下一隻boss造成的傷害翻倍。獲得三顆椰子", escape: false },
-            { id: 4, desc: "每個選擇此選項的隊伍各自對所有人造成10點傷害。逃跑。", escape: true }
+            { id: 1, desc: "選擇這個選項的人中椰子最多的那人受到35傷害。獲得一顆椰子", escape: false },
+            { id: 2, desc: "選擇這個選項的人中椰子最少的那人受到70傷害。獲得兩顆椰子", escape: false },
+            { id: 3, desc: "本輪遊戲中你下次受到的傷害翻倍。獲得三顆椰子", escape: false },
+            { id: 4, desc: "每個選擇此選項的人各自對所有人造成10點傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -350,11 +350,26 @@ class GameEngine {
 
             case "黑潮椰蟹騎士":
                 let crabAoeDamage = 0;
+                let opt1Teams = activeTeams.filter(t => t.selectedCardId === 1);
+                let opt2Teams = activeTeams.filter(t => t.selectedCardId === 2);
+                
+                let maxCoco = -1;
+                opt1Teams.forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c > maxCoco) maxCoco = c; });
+                
+                let minCoco = 99999;
+                opt2Teams.forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c < minCoco) minCoco = c; });
+
                 activeTeams.forEach(t => {
                     const cid = t.selectedCardId;
                     if (!cid) return;
-                    if (cid === 1) { coconuts[t.id] += 1; if (counts[2] >= 2) damages[t.id] += 35; }
-                    else if (cid === 2) { coconuts[t.id] += 2; if (counts[1] >= 4) damages[t.id] += 70; }
+                    if (cid === 1) { 
+                        coconuts[t.id] += 1; 
+                        if ((t.totalCoconuts + t.roundCoconuts) === maxCoco) damages[t.id] += 35; 
+                    }
+                    else if (cid === 2) { 
+                        coconuts[t.id] += 2; 
+                        if ((t.totalCoconuts + t.roundCoconuts) === minCoco) damages[t.id] += 70; 
+                    }
                     else if (cid === 3) { coconuts[t.id] += 3; t.debuffs.crabDoubleNextBoss = true; logs[t.id].push("下次受傷翻倍"); }
                     else if (cid === 4) { escapes[t.id] = true; crabAoeDamage += 10; logs[t.id].push("對所有人造成10傷害"); }
                 });
