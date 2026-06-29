@@ -358,24 +358,37 @@ class GameEngine {
                 break;
 
             case "遠古珊瑚椰石像":
+                let prevOpt3 = this.state.golemCounters.opt3;
+                let prevOpt4 = this.state.golemCounters.opt4;
+
+                this.state.golemCounters.opt1 += counts[1];
+                this.state.golemCounters.opt2 += counts[2];
+                this.state.golemCounters.opt3 += counts[3];
+                this.state.golemCounters.opt4 += counts[4];
+
                 activeTeams.forEach(t => {
                     const cid = t.selectedCardId;
                     if (!cid) return;
                     
                     if (cid === 1) {
-                        this.state.golemCounters.opt1++;
                         coconuts[t.id] += 1;
                         if (this.state.golemCounters.opt1 >= 10) damages[t.id] += 100;
                     }
                     else if (cid === 2) {
-                        this.state.golemCounters.opt2++;
                         coconuts[t.id] += 2;
                         if (this.state.golemCounters.opt2 >= 8) damages[t.id] += 80;
                     }
                     else if (cid === 3) {
-                        this.state.golemCounters.opt3++;
                         coconuts[t.id] += 3;
-                        if (this.state.golemCounters.opt3 >= 6) {
+                    }
+                    else if (cid === 4) {
+                        escapes[t.id] = true;
+                    }
+                });
+
+                if (counts[3] > 0) {
+                    for (let i = prevOpt3 + 1; i <= this.state.golemCounters.opt3; i++) {
+                        if (i >= 6) {
                             const nextIdx = this.getNextMonsterIndexInSequence();
                             if (nextIdx !== null) {
                                 if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
@@ -383,10 +396,10 @@ class GameEngine {
                             }
                         }
                     }
-                    else if (cid === 4) {
-                        this.state.golemCounters.opt4++;
-                        escapes[t.id] = true;
-                        if (this.state.golemCounters.opt4 >= 4) {
+                }
+                if (counts[4] > 0) {
+                    for (let i = prevOpt4 + 1; i <= this.state.golemCounters.opt4; i++) {
+                        if (i >= 4) {
                             const nextIdx = this.getNextMonsterIndexInSequence();
                             if (nextIdx !== null) {
                                 if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
@@ -394,7 +407,7 @@ class GameEngine {
                             }
                         }
                     }
-                });
+                }
                 break;
 
             case "黑潮椰蟹騎士":
