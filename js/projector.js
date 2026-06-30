@@ -70,7 +70,7 @@ function render() {
             document.getElementById("proj-monster-name").textContent = m.name;
             document.getElementById("proj-monster-desc").textContent = m.desc;
             
-            document.getElementById("proj-cards-container").innerHTML = m.cards.map(c => `
+            document.getElementById("proj-cards-container").innerHTML = engine.getMonsterCards(m).map(c => `
                 <div class="glass-card" style="text-align:left; border-left: 6px solid #475569;">
                     <h4 style="color:#fde047; margin-bottom:0.5rem; font-size:1.5rem;">📜 技能卡 ${c.id}</h4>
                     <div style="font-size:1.2rem; line-height:1.6; color: #e2e8f0;">${c.desc}</div>

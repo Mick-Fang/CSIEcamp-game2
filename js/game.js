@@ -64,7 +64,7 @@ const MONSTERS = [
             { id: 1, desc: "選擇此技能卡的隊伍中，椰子最多的那隊受到35傷害。獲得一顆椰子。", escape: false },
             { id: 2, desc: "選擇此技能卡的隊伍中，椰子最少的那隊受到70傷害。獲得兩顆椰子。", escape: false },
             { id: 3, desc: "本輪遊戲中你下次受到的傷害翻倍。獲得三顆椰子", escape: false },
-            { id: 4, desc: "每個選擇此選項的隊伍各自對所有人造成10點傷害。逃跑。", escape: true }
+            { id: 4, desc: "每個選擇此選項的隊伍各自對所有人造成5點傷害。逃跑。", escape: true }
         ]
     },
     {
@@ -112,9 +112,10 @@ const MONSTERS = [
         ]
     },
     {
-        name: "椰子寶箱怪",
+        name: "椰子寶箱",
         img: "assets/coconut_mimic.png",
-        desc: "偽裝成椰子的貪婪寶箱。",
+        desc: "偶然在路上發現的神祕寶箱。",
+        isNotMonster: true,
         cards: [
             { id: 1, desc: "血量+30。獲得一顆椰子。", escape: false },
             { id: 2, desc: "每個選擇此選項的隊伍指定另一人回滿血。獲得兩顆椰子。", escape: false, requireTarget: true },
@@ -213,14 +214,14 @@ class GameEngine {
         if (!gameStartedBefore) {
             const firstNames = [
                 "椰漿軟泥酋長", "椰殼小妖頭目", "狂野椰棕猛獸", "鐵殼椰核食人魔", 
-                "遠古珊瑚椰石像", "椰子寶箱怪", "黑潮椰蟹騎士", "風暴椰鱗巨翼龍", 
+                "遠古珊瑚椰石像", "椰子寶箱", "黑潮椰蟹騎士", "風暴椰鱗巨翼龍", 
                 "枯朽椰骸大祭司", "海溝腐椰海神", "終焉滅世巨椰祖靈"
             ];
             seq = firstNames.map(n => MONSTERS.findIndex(m => m.name === n)).filter(idx => idx !== -1);
             gameStartedBefore = true;
         } else {
             seq = Array.from({length: MONSTERS.length}, (_, i) => i);
-            const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
+            const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱");
             seq = seq.filter(idx => idx !== mimicIdx);
             for (let i = seq.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -246,10 +247,45 @@ class GameEngine {
         return MONSTERS[idx];
     }
 
+    getMonsterCards(monster) {
+        if (!monster) return [];
+        const cards = JSON.parse(JSON.stringify(monster.cards));
+        const monsterIdx = this.state.monsterSequence[this.state.encounterIndex];
+        const globalBuff = this.state.globalBuffs[monsterIdx];
+        
+        if (monster.name === "遠古珊瑚椰石像") {
+            const gc = this.state.golemCounters;
+            const remaining1 = Math.max(0, 10 - gc.opt1);
+            const remaining2 = Math.max(0, 8 - gc.opt2);
+            const remaining3 = Math.max(0, 6 - gc.opt3);
+            const remaining4 = Math.max(0, 4 - gc.opt4);
+            cards[0].desc = `累計${remaining1}個隊伍選擇此選項後，受到100傷害。+1$`;
+            cards[1].desc = `累計${remaining2}個隊伍選擇此選項後，受到80傷害。+2$`;
+            cards[2].desc = `累計${remaining3}個隊伍選擇此選項後，下隻怪物造成的一切傷害永久+20。+3$`;
+            cards[3].desc = `累計${remaining4}個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+20。逃跑。`;
+        }
+
+        // Show globalBuff damage bonuses on card descriptions for any monster
+        if (globalBuff && (globalBuff.all > 0 || globalBuff.opt1 > 0)) {
+            cards.forEach((c, i) => {
+                let bonus = globalBuff.all || 0;
+                if (i === 0) bonus += (globalBuff.opt1 || 0);
+                if (bonus > 0) {
+                    c.desc = `【石像共鳴: 傷害+${bonus}】` + c.desc;
+                }
+            });
+        }
+        
+        return cards;
+    }
+
     getNextMonsterIndexInSequence() {
         const curSeqPos = this.state.encounterIndex;
-        if (curSeqPos + 1 < this.state.monsterSequence.length) {
-            return this.state.monsterSequence[curSeqPos + 1];
+        for (let i = curSeqPos + 1; i < this.state.monsterSequence.length; i++) {
+            const idx = this.state.monsterSequence[i];
+            if (MONSTERS[idx] && !MONSTERS[idx].isNotMonster) {
+                return idx;
+            }
         }
         return null;
     }
@@ -318,7 +354,7 @@ class GameEngine {
         };
 
         const applyHeal = (t, amount, logMsg) => {
-            t.hp += amount;
+            t.hp = Math.min(100, t.hp + amount);
             if (logMsg) logs[t.id].push(logMsg);
             logs[t.id].push(`回復 ${amount} 血量(餘${t.hp})`);
         };
@@ -354,7 +390,7 @@ class GameEngine {
                 if (monster.name === "椰殼小妖頭目") applyDamage(t, 15);
                 if (monster.name === "狂野椰棕猛獸") applyDamage(t, 20);
                 if (monster.name === "鐵殼椰核食人魔" && counts[1] % 2 !== 0) applyDamage(t, 25);
-                if (monster.name === "椰子寶箱怪") applyHeal(t, 30);
+                if (monster.name === "椰子寶箱") applyHeal(t, 30);
                 if (monster.name === "風暴椰鱗巨翼龍") applyDamage(t, 15);
                 if (monster.name === "枯朽椰骸大祭司") { applyDamage(t, 40); t.debuffs.priestNextOpt1Dmg = true; }
             }
@@ -364,13 +400,14 @@ class GameEngine {
             this.state.golemCounters.opt1 += counts[1];
             if (this.state.golemCounters.opt1 >= 10) {
                 activeTeams.forEach(t => { if (t.selectedCardId === 1) applyDamage(t, 100); });
+                this.state.golemCounters.opt1 = 0;
             }
         }
         if (monster.name === "黑潮椰蟹騎士") {
             let maxCoco = -1;
-            activeTeams.filter(t => t.selectedCardId === 1).forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c > maxCoco) maxCoco = c; });
+            activeTeams.filter(t => t.selectedCardId === 1).forEach(t => { if(t.roundCoconuts > maxCoco) maxCoco = t.roundCoconuts; });
             activeTeams.forEach(t => {
-                if (t.selectedCardId === 1 && (t.totalCoconuts + t.roundCoconuts) === maxCoco) applyDamage(t, 35);
+                if (t.selectedCardId === 1 && t.roundCoconuts === maxCoco) applyDamage(t, 35);
             });
         }
         if (monster.name === "海溝腐椰海神") {
@@ -393,14 +430,14 @@ class GameEngine {
                 if (monster.name === "椰殼小妖頭目") applyDamage(t, Math.round(35 / counts[2]));
                 if (monster.name === "狂野椰棕猛獸" && counts[4] >= 1) applyDamage(t, 40);
                 if (monster.name === "鐵殼椰核食人魔" && counts[2] > 0 && counts[2] % 2 === 0) applyDamage(t, 50);
-                if (monster.name === "椰子寶箱怪") {
+                if (monster.name === "椰子寶箱") {
                     if (t.selectedTargetId) {
                         const target = activeTeams.find(x => x.id === t.selectedTargetId);
                         if (target) {
                             target.pendingHealFull = true;
                             logs[t.id].push(`指定第${t.selectedTargetId}隊回滿血`);
                             if(!logs[target.id]) logs[target.id] = [];
-                            logs[target.id].push("被寶箱怪指定回滿血");
+                            logs[target.id].push("被寶箱指定回滿血");
                         }
                     }
                 }
@@ -413,13 +450,14 @@ class GameEngine {
             this.state.golemCounters.opt2 += counts[2];
             if (this.state.golemCounters.opt2 >= 8) {
                 activeTeams.forEach(t => { if (t.selectedCardId === 2) applyDamage(t, 80); });
+                this.state.golemCounters.opt2 = 0;
             }
         }
         if (monster.name === "黑潮椰蟹騎士") {
             let minCoco = 99999;
-            activeTeams.filter(t => t.selectedCardId === 2).forEach(t => { const c = t.totalCoconuts + t.roundCoconuts; if(c < minCoco) minCoco = c; });
+            activeTeams.filter(t => t.selectedCardId === 2).forEach(t => { if(t.roundCoconuts < minCoco) minCoco = t.roundCoconuts; });
             activeTeams.forEach(t => {
-                if (t.selectedCardId === 2 && (t.totalCoconuts + t.roundCoconuts) === minCoco) applyDamage(t, 70);
+                if (t.selectedCardId === 2 && t.roundCoconuts === minCoco) applyDamage(t, 70);
             });
         }
         if (monster.name === "海溝腐椰海神") {
@@ -447,7 +485,7 @@ class GameEngine {
                 if (monster.name === "椰殼小妖頭目" && counts[3] === activeTeams.length) applyDamage(t, 55);
                 if (monster.name === "狂野椰棕猛獸" && counts[4] >= 2) applyDamage(t, 80);
                 if (monster.name === "鐵殼椰核食人魔" && counts[3] >= 2) applyDamage(t, 75);
-                if (monster.name === "椰子寶箱怪") {
+                if (monster.name === "椰子寶箱") {
                     if (t.selectedTargetId) {
                         const target = activeTeams.find(x => x.id === t.selectedTargetId);
                         if (target) {
@@ -455,7 +493,7 @@ class GameEngine {
                             coconuts[target.id] += 3;
                             logs[t.id].push(`指定第${t.selectedTargetId}隊獲得3顆椰子`);
                             if(!logs[target.id]) logs[target.id] = [];
-                            logs[target.id].push("被寶箱怪指定獲得3顆椰子");
+                            logs[target.id].push("被寶箱指定獲得3顆椰子");
                         }
                     }
                 }
@@ -472,16 +510,14 @@ class GameEngine {
         });
 
         if (monster.name === "遠古珊瑚椰石像" && counts[3] > 0) {
-            let prevOpt3 = this.state.golemCounters.opt3;
             this.state.golemCounters.opt3 += counts[3];
-            for (let i = prevOpt3 + 1; i <= this.state.golemCounters.opt3; i++) {
-                if (i >= 6) {
-                    const nextIdx = this.getNextMonsterIndexInSequence();
-                    if (nextIdx !== null) {
-                        if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                        this.state.globalBuffs[nextIdx].all += 20;
-                    }
+            if (this.state.golemCounters.opt3 >= 6) {
+                const nextIdx = this.getNextMonsterIndexInSequence();
+                if (nextIdx !== null) {
+                    if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
+                    this.state.globalBuffs[nextIdx].all += 20;
                 }
+                this.state.golemCounters.opt3 = 0;
             }
         }
         if (monster.name === "風暴椰鱗巨翼龍" && counts[3] === 0) this.state.dragonRepeatTriggered = true;
@@ -500,10 +536,10 @@ class GameEngine {
                 if (monster.name === "椰殼小妖頭目") applyDamage(t, Math.round(75 / counts[4]));
                 if (monster.name === "狂野椰棕猛獸") applyDamage(t, 10);
                 if (monster.name === "鐵殼椰核食人魔" && counts[4] >= 2) applyDamage(t, 100);
-                if (monster.name === "椰子寶箱怪") { coconuts[t.id] -= 3; logs[t.id].push("失去3顆椰子"); }
+                if (monster.name === "椰子寶箱") { coconuts[t.id] -= 3; logs[t.id].push("失去3顆椰子"); }
                 if (monster.name === "黑潮椰蟹騎士") {
-                    logs[t.id].push("對所有人造成10傷害");
-                    activeTeams.forEach(otherT => applyDamage(otherT, 10, "黑潮椰蟹卡4範圍傷"));
+                    logs[t.id].push("對所有人造成5傷害");
+                    activeTeams.forEach(otherT => applyDamage(otherT, 5, "黑潮椰蟹卡4範圍傷"));
                 }
                 if (monster.name === "風暴椰鱗巨翼龍") applyDamage(t, 35);
                 if (monster.name === "枯朽椰骸大祭司") {
@@ -524,16 +560,14 @@ class GameEngine {
         });
 
         if (monster.name === "遠古珊瑚椰石像" && counts[4] > 0) {
-            let prevOpt4 = this.state.golemCounters.opt4;
             this.state.golemCounters.opt4 += counts[4];
-            for (let i = prevOpt4 + 1; i <= this.state.golemCounters.opt4; i++) {
-                if (i >= 4) {
-                    const nextIdx = this.getNextMonsterIndexInSequence();
-                    if (nextIdx !== null) {
-                        if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                        this.state.globalBuffs[nextIdx].opt1 += 20;
-                    }
+            if (this.state.golemCounters.opt4 >= 4) {
+                const nextIdx = this.getNextMonsterIndexInSequence();
+                if (nextIdx !== null) {
+                    if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
+                    this.state.globalBuffs[nextIdx].opt1 += 20;
                 }
+                this.state.golemCounters.opt4 = 0;
             }
         }
         if (monster.name === "風暴椰鱗巨翼龍" && counts[4] > 0) this.state.dragonRepeatTriggered = true;
@@ -636,7 +670,7 @@ class GameEngine {
         
         // 生成新的原始序列
         let seq = Array.from({ length: MONSTERS.length }, (_, i) => i);
-        const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱怪");
+        const mimicIdx = MONSTERS.findIndex(m => m.name === "椰子寶箱");
         seq = seq.filter(idx => idx !== mimicIdx);
         for (let i = seq.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -653,6 +687,9 @@ class GameEngine {
             t.selectedTargetId = null;
             t.lastActionLog = "";
             t.debuffs.dragonExtraDmg = 0; // reset
+            t.debuffs.priestNextOpt1Dmg = false;
+            t.debuffs.priestNextNotOpt2Dmg = false;
+            t.debuffs.crabDoubleNextBoss = false;
         });
 
         const m = this.getCurrentMonster();
@@ -664,7 +701,7 @@ class GameEngine {
     overrideStats(teamId, hpOffset, coconutOffset) {
         const team = this.state.teams.find(t => t.id === teamId);
         if (team) {
-            team.hp = Math.max(0, team.hp + hpOffset);
+            team.hp = Math.min(100, Math.max(0, team.hp + hpOffset));
             team.totalCoconuts = Math.max(0, team.totalCoconuts + coconutOffset);
             if (team.hp === 0 && team.status === "active") {
                 team.status = "dead";

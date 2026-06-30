@@ -108,7 +108,7 @@ function renderBidPhase(state) {
     const m = engine.getCurrentMonster();
     if (m) {
         document.getElementById("bid-monster-name").textContent = m.name;
-        document.getElementById("bid-monster-cards").innerHTML = m.cards.map(c => 
+        document.getElementById("bid-monster-cards").innerHTML = engine.getMonsterCards(m).map(c => 
             `<div style="margin-bottom:0.5rem;"><strong>卡 ${c.id}:</strong> ${c.desc}</div>`
         ).join("");
     }
@@ -148,10 +148,10 @@ window.toggleTarget = function(selectEl, monsterName) {
     const val = selectEl.value;
     const targetSelect = selectEl.parentElement.querySelector(".target-select");
     
-    // 大祭司卡 4 或 海神卡 3 或 寶箱怪 2, 3 需要目標
+    // 大祭司卡 4 或 海神卡 3 或 寶箱 2, 3 需要目標
     if ((monsterName === "枯朽椰骸大祭司" && val == "4") || 
         (monsterName === "海溝腐椰海神" && val == "3") ||
-        (monsterName === "椰子寶箱怪" && (val == "2" || val == "3"))) {
+        (monsterName === "椰子寶箱" && (val == "2" || val == "3"))) {
         targetSelect.style.display = "block";
         targetSelect.required = true;
     } else {
