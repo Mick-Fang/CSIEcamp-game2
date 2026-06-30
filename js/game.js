@@ -52,8 +52,8 @@ const MONSTERS = [
         cards: [
             { id: 1, desc: "(整個遊戲中)累計10個隊伍選擇此選項後，受到100傷害。獲得一顆椰子", escape: false },
             { id: 2, desc: "(整個遊戲中)累計8個隊伍選擇此選項後，受到80傷害。獲得兩顆椰子", escape: false },
-            { id: 3, desc: "(整個遊戲中)累計6個隊伍選擇此選項後，下隻怪物造成的一切傷害永久+20。獲得三顆椰子", escape: false },
-            { id: 4, desc: "(整個遊戲中)累計4個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+20。逃跑。", escape: true }
+            { id: 3, desc: "(整個遊戲中)累計6個隊伍選擇此選項後，下隻怪物造成的一切傷害永久+10。獲得三顆椰子", escape: false },
+            { id: 4, desc: "(整個遊戲中)累計4個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+10。逃跑。", escape: true }
         ]
     },
     {
@@ -261,8 +261,8 @@ class GameEngine {
             const remaining4 = Math.max(0, 4 - gc.opt4);
             cards[0].desc = `累計${remaining1}個隊伍選擇此選項後，受到100傷害。+1$`;
             cards[1].desc = `累計${remaining2}個隊伍選擇此選項後，受到80傷害。+2$`;
-            cards[2].desc = `累計${remaining3}個隊伍選擇此選項後，下隻怪物造成的一切傷害永久+20。+3$`;
-            cards[3].desc = `累計${remaining4}個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+20。逃跑。`;
+            cards[2].desc = `累計${remaining3}個隊伍選擇此選項後，下隻怪物造成的一切傷害永久+10。+3$`;
+            cards[3].desc = `累計${remaining4}個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+10。逃跑。`;
         }
 
         // Show globalBuff damage bonuses on card descriptions for any monster
@@ -515,7 +515,7 @@ class GameEngine {
                 const nextIdx = this.getNextMonsterIndexInSequence();
                 if (nextIdx !== null) {
                     if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                    this.state.globalBuffs[nextIdx].all += 20;
+                    this.state.globalBuffs[nextIdx].all += 10;
                 }
                 this.state.golemCounters.opt3 = 0;
             }
@@ -565,7 +565,7 @@ class GameEngine {
                 const nextIdx = this.getNextMonsterIndexInSequence();
                 if (nextIdx !== null) {
                     if (!this.state.globalBuffs[nextIdx]) this.state.globalBuffs[nextIdx] = { all: 0, opt1: 0 };
-                    this.state.globalBuffs[nextIdx].opt1 += 20;
+                    this.state.globalBuffs[nextIdx].opt1 += 10;
                 }
                 this.state.golemCounters.opt4 = 0;
             }
