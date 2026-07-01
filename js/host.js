@@ -154,6 +154,29 @@ window.toggleTarget = function(selectEl, monsterName) {
         (monsterName === "椰子寶箱" && (val == "2" || val == "3"))) {
         targetSelect.style.display = "block";
         targetSelect.required = true;
+        
+        // 大祭司復活：只能選目前陣亡的隊伍 (非 active)
+        if (monsterName === "枯朽椰骸大祭司" && val == "4") {
+            Array.from(targetSelect.options).forEach(opt => {
+                if (opt.value === "") return;
+                if (opt.textContent.includes("(active)")) {
+                    opt.disabled = true;
+                    opt.style.display = "none";
+                } else {
+                    opt.disabled = false;
+                    opt.style.display = "block";
+                }
+            });
+            if (targetSelect.selectedOptions[0] && targetSelect.selectedOptions[0].disabled) {
+                targetSelect.value = "";
+            }
+        } else {
+            // 其他需要目標的技能，開放所有隊伍選項
+            Array.from(targetSelect.options).forEach(opt => {
+                opt.disabled = false;
+                opt.style.display = "block";
+            });
+        }
     } else {
         targetSelect.style.display = "none";
         targetSelect.required = false;
