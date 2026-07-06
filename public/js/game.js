@@ -259,7 +259,7 @@ class GameEngine {
         return null;
     }
 
-    submitCards(cardSelections) {
+    async submitCards(cardSelections, onStep) {
         const monster = this.getCurrentMonster();
         if (!monster) return;
 
@@ -334,60 +334,64 @@ class GameEngine {
         
         // 椰漿軟泥酋長
         if (monster.name === "椰漿軟泥酋長") {
-            activeTeams.forEach(t => {
-                if (t.selectedCardId === 1) applyDamage(t, 20);
-                if (t.selectedCardId === 2) applyDamage(t, 40);
-                if (t.selectedCardId === 3) applyDamage(t, 60);
-            });
+            activeTeams.forEach(t => { if (t.selectedCardId === 1) applyDamage(t, 20); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 2) applyDamage(t, 40); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 3) applyDamage(t, 60); });
+            await triggerStep();
         }
         
         // 椰殼小妖頭目
         if (monster.name === "椰殼小妖頭目") {
-            activeTeams.forEach(t => {
-                if (t.selectedCardId === 1 && counts[1] > 0) applyDamage(t, Math.round(30 / counts[1]));
-                if (t.selectedCardId === 2 && counts[2] > 0) applyDamage(t, Math.round(60 / counts[2]));
-                if (t.selectedCardId === 3 && counts[3] > 0) applyDamage(t, Math.round(90 / counts[3]));
-            });
+            activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] > 0) applyDamage(t, Math.round(30 / counts[1])); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] > 0) applyDamage(t, Math.round(60 / counts[2])); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] > 0) applyDamage(t, Math.round(90 / counts[3])); });
+            await triggerStep();
         }
         
         // 狂野椰棕猛獸
         if (monster.name === "狂野椰棕猛獸") {
-            activeTeams.forEach(t => {
-                if (t.selectedCardId === 1 && counts[3] >= 1) applyDamage(t, 40);
-                if (t.selectedCardId === 2 && counts[3] >= 2) applyDamage(t, 60);
-                if (t.selectedCardId === 3 && counts[3] === activeCountBefore) applyDamage(t, 80);
-            });
+            activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[3] >= 1) applyDamage(t, 40); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[3] >= 2) applyDamage(t, 60); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] === activeCountBefore) applyDamage(t, 80); });
+            await triggerStep();
         }
         
         // 鐵殼椰核食人魔
         if (monster.name === "鐵殼椰核食人魔") {
-            activeTeams.forEach(t => {
-                if (t.selectedCardId === 1 && counts[1] % 2 !== 0) applyDamage(t, 50);
-                if (t.selectedCardId === 2 && counts[2] % 2 === 0) applyDamage(t, 50);
-                if (t.selectedCardId === 3 && counts[3] >= 2) applyDamage(t, 70);
-            });
+            activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] % 2 !== 0) applyDamage(t, 50); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] % 2 === 0) applyDamage(t, 50); });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] >= 2) applyDamage(t, 70); });
+            await triggerStep();
         }
         
         // 遠古珊瑚椰石像
         if (monster.name === "遠古珊瑚椰石像") {
-            activeTeams.forEach(t => {
-                if (t.selectedCardId === 1) t.debuffs.golemCurseDmg = 10;
-                if (t.selectedCardId === 2) t.debuffs.golemCurseDmg = 30;
+            activeTeams.forEach(t => { if (t.selectedCardId === 1) { t.debuffs.golemCurseDmg = 10; stepAnimators.add(t.id); } });
+            await triggerStep();
+            activeTeams.forEach(t => { if (t.selectedCardId === 2) { t.debuffs.golemCurseDmg = 30; stepAnimators.add(t.id); } });
+            await triggerStep();
+            activeTeams.forEach(t => { 
                 if (t.selectedCardId === 3) {
                     let half = Math.floor(t.roundCoconuts / 2);
                     t.roundCoconuts -= half;
                     logs[t.id].push(`失去 ${half} 顆椰子 (袋中減半)`);
+                    stepAnimators.add(t.id);
                 }
             });
+            await triggerStep();
         }
         
         // 黑潮椰蟹騎士
         if (monster.name === "黑潮椰蟹騎士") {
-            let minCoco1 = 99999;
-            let maxCoco1 = -1;
-            let minCoco2 = 99999;
-            let maxCoco2 = -1;
-            
+            let minCoco1 = 99999, maxCoco1 = -1, minCoco2 = 99999, maxCoco2 = -1;
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
                     if (t.roundCoconuts < minCoco1) minCoco1 = t.roundCoconuts;
@@ -404,12 +408,21 @@ class GameEngine {
                     if (t.roundCoconuts === minCoco1) applyDamage(t, 60);
                     if (t.roundCoconuts === maxCoco1) applyDamage(t, 60, "最大值懲罰");
                 }
+            });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
                 if (t.selectedCardId === 2) {
                     if (t.roundCoconuts === maxCoco2) applyDamage(t, 70);
                     if (t.roundCoconuts === minCoco2) applyDamage(t, 70, "最小值懲罰");
                 }
-                if (t.selectedCardId === 3) t.debuffs.crabNextEncounterDmg = true;
             });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (t.selectedCardId === 3) { t.debuffs.crabNextEncounterDmg = true; stepAnimators.add(t.id); }
+            });
+            await triggerStep();
         }
         
         // 風暴椰鱗巨翼龍
@@ -417,48 +430,84 @@ class GameEngine {
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
                     addCoconuts(t, -2, true);
+                    stepAnimators.add(t.id);
                     if (counts[1] < 7) this.state.dragonRepeatTriggered = true;
                 }
-                if (t.selectedCardId === 2) addCoconuts(t, -2, true);
-                if (t.selectedCardId === 3) t.specialEscapeNoHealNoClearNoSave = true;
             });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (t.selectedCardId === 2) { addCoconuts(t, -2, true); stepAnimators.add(t.id); }
+            });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (t.selectedCardId === 3) { t.specialEscapeNoHealNoClearNoSave = true; stepAnimators.add(t.id); }
+            });
+            await triggerStep();
         }
         
         // 枯朽椰骸大祭司
         if (monster.name === "枯朽椰骸大祭司") {
             activeTeams.forEach(t => {
-                if (t.selectedTargetId) {
+                if (t.selectedTargetId && t.selectedCardId === 1) {
                     const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
                     if (target) {
-                        if (t.selectedCardId === 1) {
-                            target.roundCoconuts -= 2;
-                            if (target.roundCoconuts < 0) target.roundCoconuts = 0;
-                            if (!logs[target.id]) logs[target.id] = [];
-                            logs[target.id].push(`被 ${t.name} 奪走 2 椰子`);
-                            logs[t.id].push(`移除 ${target.name} 袋中 2 椰子`);
-                        }
-                        if (t.selectedCardId === 2) {
-                            applyDamage(target, 40, `被 ${t.name} 攻擊`);
-                            logs[t.id].push(`對 ${target.name} 造成 40 傷害`);
-                        }
-                        if (t.selectedCardId === 3) {
-                            target.debuffs.deathDoomCount = 3;
-                            if (!logs[target.id]) logs[target.id] = [];
-                            logs[target.id].push(`被 ${t.name} 施加死亡宣告(3隻魔王後)`);
-                            logs[t.id].push(`對 ${target.name} 施加死亡宣告`);
-                        }
+                        target.roundCoconuts -= 2;
+                        if (target.roundCoconuts < 0) target.roundCoconuts = 0;
+                        if (!logs[target.id]) logs[target.id] = [];
+                        logs[target.id].push(`被 ${t.name} 奪走 2 椰子`);
+                        logs[t.id].push(`移除 ${target.name} 袋中 2 椰子`);
+                        stepAnimators.add(target.id);
                     }
                 }
             });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (t.selectedTargetId && t.selectedCardId === 2) {
+                    const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
+                    if (target) {
+                        applyDamage(target, 40, `被 ${t.name} 攻擊`);
+                        logs[t.id].push(`對 ${target.name} 造成 40 傷害`);
+                    }
+                }
+            });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (t.selectedTargetId && t.selectedCardId === 3) {
+                    const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
+                    if (target) {
+                        target.debuffs.deathDoomCount = 3;
+                        if (!logs[target.id]) logs[target.id] = [];
+                        logs[target.id].push(`被 ${t.name} 施加死亡宣告(3隻魔王後)`);
+                        logs[t.id].push(`對 ${target.name} 施加死亡宣告`);
+                        stepAnimators.add(target.id);
+                    }
+                }
+            });
+            await triggerStep();
         }
         
         // 海溝腐椰海神
         if (monster.name === "海溝腐椰海神") {
             activeTeams.forEach(t => {
-                if (counts[1] > counts[2] && (t.selectedCardId === 2 || t.selectedCardId === 3)) applyDamage(t, 80);
-                if (counts[2] > counts[1] && (t.selectedCardId === 1 || t.selectedCardId === 3)) applyDamage(t, 70);
-                if (t.selectedCardId === 3) addCoconuts(t, 6, true);
+                if (counts[2] > counts[1] && t.selectedCardId === 1) applyDamage(t, 70);
             });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (counts[1] > counts[2] && t.selectedCardId === 2) applyDamage(t, 80);
+            });
+            await triggerStep();
+            
+            activeTeams.forEach(t => {
+                if (counts[1] > counts[2] && t.selectedCardId === 3) applyDamage(t, 80);
+                if (counts[2] > counts[1] && t.selectedCardId === 3) applyDamage(t, 70);
+                if (t.selectedCardId === 3) { addCoconuts(t, 6, true); stepAnimators.add(t.id); }
+            });
+            await triggerStep();
         }
         
         // 終焉滅世巨椰祖靈
@@ -467,33 +516,31 @@ class GameEngine {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡1無人選制裁"));
                 this.addLog(`祖靈震怒：卡1無人選擇，所有人承受 90 點傷害！`);
             }
+            await triggerStep();
+            
             if (counts[2] === 0) {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡2無人選制裁"));
                 this.addLog(`祖靈震怒：卡2無人選擇，所有人承受 90 點傷害！`);
             }
+            await triggerStep();
+            
             if (counts[3] === 0) {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡3無人選制裁"));
                 this.addLog(`祖靈震怒：卡3無人選擇，所有人承受 90 點傷害！`);
             }
+            await triggerStep();
         }
-
 
         // ==============================================
         // 2. Common Skills (共同技能)
         // ==============================================
         activeTeams.forEach(t => {
-            if (t.selectedCardId === 1) {
-                addCoconuts(t, 1);
-            } else if (t.selectedCardId === 2) {
-                addCoconuts(t, 2);
-            } else if (t.selectedCardId === 3) {
-                escapes[t.id] = true;
-            } else if (!t.selectedCardId) {
-                t.hp = 0; 
-                logs[t.id] = ["超時未選擇，判定死亡"]; 
-            }
+            if (t.selectedCardId === 1) { addCoconuts(t, 1); stepAnimators.add(t.id); }
+            else if (t.selectedCardId === 2) { addCoconuts(t, 2); stepAnimators.add(t.id); }
+            else if (t.selectedCardId === 3) escapes[t.id] = true;
+            else if (!t.selectedCardId) { t.hp = 0; logs[t.id] = ["超時未選擇，判定死亡"]; stepAnimators.add(t.id); }
         });
-
+        await triggerStep();
 
         // ==============================================
         // 3. Finalization (死亡與逃跑結算)

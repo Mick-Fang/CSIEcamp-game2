@@ -1,17 +1,23 @@
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 const engine = new GameEngine();
 let serverTeamActions = {};
 let serverReadyCount = 0; // 全域儲存準備人數，render() 每次都重新判斷
 
-function syncStateToServer() {
-    fetch('/csiecamp_game2/api/state', {
+async function syncStateToServer(clearActions = false) {
+    let body = {game_state: engine.state};
+    if (clearActions) body.clear_actions = true;
+    await fetch('/csiecamp_game2/api/state', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({game_state: engine.state})
+        body: JSON.stringify(body)
     }).catch(e => console.log(e));
 }
 
-function pollServer() {
-    fetch('/csiecamp_game2/api/state')
+async function pollServer() {
+    await fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.team_actions) {
@@ -53,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setupInputs.innerHTML += `<div><label>小隊 ${i}</label><input type="text" class="form-input" name="team-${i}" value="第 ${i} 小隊"></div>`;
     }
 
-    document.getElementById("setup-form").addEventListener("submit", e => {
+    document.getElementById("setup-form").addEventListener("submit", async e => {
         e.preventDefault();
         // 雙重保險：即使按鈕被繞過（如 Enter 鍵），也必須所有小隊都準備好才能開始
         if (serverReadyCount < 10) {
@@ -64,18 +70,27 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let i = 1; i <= 10; i++) names.push(e.target.elements[`team-${i}`].value.trim());
         engine.initTeams(names);
         // Clear ready list after game starts so next reset works correctly
-        fetch('/csiecamp_game2/api/state', {
+        await fetch('/csiecamp_game2/api/state', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ game_state: engine.state, clear_ready: true, clear_actions: true })
         }).catch(e => console.log(e));
     });
 
-    document.getElementById("bid-form").addEventListener("submit", e => {
+    document.getElementById("bid-form").addEventListener("submit", async e => {
         e.preventDefault();
-        // 手動結算時，使用 server 收集到的 actions
-        engine.submitCards(serverTeamActions);
-        syncStateToServer();
+        document.getElementById("phase-encounter-bid").style.display = "none";
+        
+        await engine.submitCards(serverTeamActions, async (animatingTeams) => {
+            engine.state.animatingTeams = animatingTeams;
+            await syncStateToServer(false);
+            render();
+            await sleep(1500);
+        });
+        
+        engine.state.animatingTeams = [];
+        await syncStateToServer(true); // clearActions = true
+        serverTeamActions = {};
         render();
     });
 });
@@ -91,7 +106,7 @@ function render() {
     document.getElementById("aside-teams-list").innerHTML = state.teams.map(t => `
         <div style="border-bottom:1px solid #ccc; padding:4px 0;">
             <strong>${t.name}</strong> (${t.status})
-            <br>HP: <span style="color:red">${t.hp}</span> | 袋中: <span style="color:orange">${t.roundCoconuts}</span> | 總資產: ${t.totalCoconuts}
+            <br>HP: <span style="color:red">${t.hp}</span> | 袋中: <span style="color:orange">${t.roundCoconuts}</span> | 家中椰子: ${t.totalCoconuts}
         </div>
     `).join("");
 
@@ -221,10 +236,10 @@ window.toggleTarget = function(selectEl, monsterName) {
     }
 }
 
-function nextEncounter() {
+async function nextEncounter() {
     engine.nextEncounter();
     // Clear server-side team actions so teams can pick cards again
-    fetch('/csiecamp_game2/api/state', {
+    await fetch('/csiecamp_game2/api/state', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ game_state: engine.state, clear_actions: true })
@@ -233,10 +248,10 @@ function nextEncounter() {
     render();
 }
 function nextRound() { engine.nextRound(); }
-function resetGame() {
+async function resetGame() {
     if(confirm("確定重置?")) {
         engine.resetGame();
-        fetch('/csiecamp_game2/api/state', {
+        await fetch('/csiecamp_game2/api/state', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ game_state: engine.state, clear_actions: true, clear_ready: true })

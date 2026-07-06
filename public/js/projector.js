@@ -53,14 +53,14 @@ function render() {
         }
 
         return `
-            <div class="team-box ${t.status}">
+            <div class="team-box ${t.status} ${animClass}">
                 <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
                 <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>
                 ${cardIndicator}
                 ${debuffHtml}
                 <div style="font-size: 1.1rem; margin-bottom: 0.2rem;">💖 HP: <span style="font-size:1.5rem; font-weight:bold;">${t.hp}</span></div>
                 <div style="font-size: 1.1rem;">🎒 袋中: <span style="font-size:1.5rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
-                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 總資產: <span style="color:#fff;">${t.totalCoconuts}</span></div>
+                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 家中椰子: <span style="color:#fff;">${t.totalCoconuts}</span></div>
             </div>
         `;
     }).join("");
@@ -109,3 +109,27 @@ function render() {
         document.getElementById("view-round-end").style.display = "block";
     }
 }
+
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+.shake-anim {
+  animation: shake 0.5s;
+  animation-iteration-count: infinite;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.8) !important;
+  border-color: #ef4444 !important;
+}
+`;
+document.head.appendChild(style);
