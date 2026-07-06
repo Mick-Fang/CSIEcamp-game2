@@ -4,7 +4,8 @@ function sleep(ms) {
 }
 const engine = new GameEngine();
 let serverTeamActions = {};
-let serverReadyCount = 0; // 全域儲存準備人數，render() 每次都重新判斷
+let serverReadyCount = 0;
+let isSubmitting = false; // 防止雙重結算
 
 async function syncStateToServer(clearActions = false) {
     let body = {game_state: engine.state};
@@ -34,17 +35,14 @@ async function pollServer() {
 setInterval(pollServer, 1000);
 
 // Timer Tick
-setInterval(() => {
-    if (engine.state.phase === "ENCOUNTER_BID" && engine.state.timeLeft > 0) {
+setInterval(async () => {
+    if (engine.state.phase === "ENCOUNTER_BID" && engine.state.timeLeft > 0 && !isSubmitting) {
         engine.state.timeLeft -= 1;
         syncStateToServer();
-        render(); // update timer UI
+        render();
         
         if (engine.state.timeLeft <= 0) {
-            // Auto submit
-            engine.submitCards(serverTeamActions);
-            syncStateToServer();
-            render();
+            await doSubmit();
         }
     }
 }, 1000);
@@ -79,21 +77,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("bid-form").addEventListener("submit", async e => {
         e.preventDefault();
-        document.getElementById("phase-encounter-bid").style.display = "none";
-        
-        await engine.submitCards(serverTeamActions, async (animatingTeams) => {
-            engine.state.animatingTeams = animatingTeams;
-            await syncStateToServer(false);
-            render();
-            await sleep(1500);
-        });
-        
-        engine.state.animatingTeams = [];
-        await syncStateToServer(true); // clearActions = true
-        serverTeamActions = {};
-        render();
+        await doSubmit();
     });
 });
+
+async function doSubmit() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+    document.getElementById("phase-encounter-bid").style.display = "none";
+    
+    await engine.submitCards(serverTeamActions, async (stepLabel, animatingTeamIds) => {
+        // 更新 animatingTeams 讓 projector 知道哪些隊伍要震動
+        engine.state.animatingTeams = animatingTeamIds;
+        engine.state.animationLabel = stepLabel;
+        await syncStateToServer(false);
+        render();
+        await sleep(1800);
+    });
+    
+    engine.state.animatingTeams = [];
+    engine.state.animationLabel = "";
+    await syncStateToServer(true);
+    serverTeamActions = {};
+    isSubmitting = false;
+    render();
+}
 
 function render() {
     const state = engine.state;

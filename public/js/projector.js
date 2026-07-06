@@ -29,6 +29,8 @@ function render() {
     document.getElementById("view-round-end").style.display = "none";
 
     // 渲染下方小隊網格
+    const animatingTeams = state.animatingTeams || [];
+    const animationLabel = state.animationLabel || "";
     document.getElementById("teams-grid").innerHTML = state.teams.map(t => {
         let statusText = "🛡️ 探索中";
         let statusColor = "var(--ocean-medium)";
@@ -52,6 +54,9 @@ function render() {
             </div>`;
         }
 
+        const isAnimating = animatingTeams.includes(t.id);
+        const animClass = isAnimating ? "shake-anim" : "";
+
         return `
             <div class="team-box ${t.status} ${animClass}">
                 <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
@@ -60,7 +65,7 @@ function render() {
                 ${debuffHtml}
                 <div style="font-size: 1.1rem; margin-bottom: 0.2rem;">💖 HP: <span style="font-size:1.5rem; font-weight:bold;">${t.hp}</span></div>
                 <div style="font-size: 1.1rem;">🎒 袋中: <span style="font-size:1.5rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
-                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 家中椰子: <span style="color:#fff;">${t.totalCoconuts}</span></div>
+                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏡 家中椰子: <span style="color:#fff;">${t.totalCoconuts}</span></div>
             </div>
         `;
     }).join("");
@@ -91,6 +96,9 @@ function render() {
         if (state.phase === "ENCOUNTER_RESULT") {
             resText.innerHTML = "⚡ 結算完畢！請查看各小隊狀態變化 ⚡";
             resText.style.color = "var(--success-green)";
+        } else if (animationLabel) {
+            resText.innerHTML = `⚡ <strong style="color:#fde047;">${animationLabel}</strong> 結算中...`;
+            resText.style.color = "#f59e0b";
         } else {
             resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${state.timeLeft}</span> 秒`;
             resText.style.color = "#94a3b8";
