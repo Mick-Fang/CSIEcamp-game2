@@ -1,15 +1,22 @@
 const engine = new GameEngine();
 
-window.addEventListener("message", (e) => {
-    if (e.data && e.data.type === "COCONUT_STATE_UPDATE") {
-        engine.state = e.data.state;
-        render();
-    }
-});
-if (window.opener) window.opener.postMessage({ type: "COCONUT_REQUEST_STATE" }, "*");
-window.addEventListener("storage", (e) => { if (e.key === "coconut_game2_state") { engine.loadState(); render(); } });
+function pollServer() {
+    fetch('/api/state')
+        .then(res => res.json())
+        .then(data => {
+            if (data.game_state && Object.keys(data.game_state).length > 0) {
+                engine.state = data.game_state;
+                render();
+            }
+        })
+        .catch(e => console.log(e));
+}
 
-document.addEventListener("DOMContentLoaded", render);
+setInterval(pollServer, 1000);
+
+document.addEventListener("DOMContentLoaded", () => {
+    pollServer();
+});
 
 function render() {
     const state = engine.state;
@@ -26,7 +33,7 @@ function render() {
     document.getElementById("teams-grid").innerHTML = state.teams.map(t => {
         let statusText = "🛡️ 探索中";
         let statusColor = "var(--ocean-medium)";
-        if (t.status === "escaped") { statusText = "🏃 已撤離"; statusColor = "var(--success-green)"; }
+        if (t.status === "escaped") { statusText = "🏕️ 休息整備"; statusColor = "var(--success-green)"; }
         else if (t.status === "dead") { statusText = "💀 陣亡"; statusColor = "var(--danger-red)"; }
 
         let cardIndicator = "";
@@ -35,11 +42,9 @@ function render() {
         }
 
         let debuffList = [];
-        if (t.debuffs.crabDoubleNextBoss) debuffList.push("🦀受傷翻倍");
-        if (t.debuffs.dragonExtraDmg > 0) debuffList.push(`🌪️受傷額外+${t.debuffs.dragonExtraDmg}`);
-        if (t.debuffs.priestNextOpt1Dmg) debuffList.push("💀選卡1受傷+40");
-        if (t.debuffs.priestNextNotOpt2Dmg) debuffList.push("💀不選卡2受傷+40");
-        if (t.debuffs.seaGodCurse > 0) debuffList.push(`🌊遇海神受傷+${t.debuffs.seaGodCurse}`);
+        if (t.debuffs.golemCurseDmg > 0) debuffList.push(`🗿獲椰受傷+${t.debuffs.golemCurseDmg}`);
+        if (t.debuffs.crabNextEncounterDmg) debuffList.push("🦀遇蟹受傷+80");
+        if (t.debuffs.deathDoomCount > 0) debuffList.push(`💀死亡宣告:剩${t.debuffs.deathDoomCount}遭遇`);
 
         let debuffHtml = "";
         if (debuffList.length > 0) {
@@ -50,13 +55,13 @@ function render() {
 
         return `
             <div class="team-box ${t.status}">
-                <h3 style="margin:0 0 0.5rem 0; color: #fff; font-size: 1.4rem;">${t.name}</h3>
-                <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.5rem; font-size: 1.2rem;">${statusText}</div>
+                <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
+                <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>
                 ${cardIndicator}
                 ${debuffHtml}
-                <div style="font-size: 1.2rem; margin-bottom: 0.25rem;">💖 HP: <span style="font-size:1.8rem; font-weight:bold;">${t.hp}</span></div>
-                <div style="font-size: 1.2rem;">🎒 袋中: <span style="font-size:1.8rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
-                <div style="margin-top: 1rem; font-size: 1.1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 總資產: <span style="color:#fff;">${t.totalCoconuts}</span></div>
+                <div style="font-size: 1.1rem; margin-bottom: 0.2rem;">💖 HP: <span style="font-size:1.5rem; font-weight:bold;">${t.hp}</span></div>
+                <div style="font-size: 1.1rem;">🎒 袋中: <span style="font-size:1.5rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
+                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏦 總資產: <span style="color:#fff;">${t.totalCoconuts}</span></div>
             </div>
         `;
     }).join("");
@@ -70,12 +75,17 @@ function render() {
             document.getElementById("proj-monster-name").textContent = m.name;
             document.getElementById("proj-monster-desc").textContent = m.desc;
             
-            document.getElementById("proj-cards-container").innerHTML = engine.getMonsterCards(m).map(c => `
-                <div class="glass-card" style="text-align:left; border-left: 6px solid #475569;">
-                    <h4 style="color:#fde047; margin-bottom:0.5rem; font-size:1.5rem;">📜 技能卡 ${c.id}</h4>
-                    <div style="font-size:1.2rem; line-height:1.6; color: #e2e8f0;">${c.desc}</div>
+            document.getElementById("proj-cards-container").innerHTML = engine.getMonsterCards(m).map(c => {
+                const desc = c.condition || c.desc;
+                const tags = c.tags ? c.tags.map(t => `<span style="background:#fde047; color:#000; padding:2px 6px; border-radius:4px; font-size:0.9rem; margin-right:8px; font-weight:bold;">${t}</span>`).join('') : '';
+                return `
+                <div class="glass-card" style="text-align:left; border-left: 6px solid #475569; flex: 1; padding: 0.75rem 1rem;">
+                    <h4 style="color:#fde047; margin-bottom:0.25rem; font-size:1.1rem;">📜 技能卡 ${c.id}</h4>
+                    <div style="font-size:1rem; line-height:1.4; color: #e2e8f0; margin-bottom:0.25rem;">${desc}</div>
+                    <div>${tags}</div>
                 </div>
-            `).join("");
+                `;
+            }).join("");
         }
 
         const resText = document.getElementById("proj-result-text");
@@ -83,7 +93,7 @@ function render() {
             resText.innerHTML = "⚡ 結算完畢！請查看各小隊狀態變化 ⚡";
             resText.style.color = "var(--success-green)";
         } else {
-            resText.innerHTML = "🤔 請各小隊進行討論，並告知關主選擇的技能卡...";
+            resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${state.timeLeft}</span> 秒`;
             resText.style.color = "#94a3b8";
         }
 

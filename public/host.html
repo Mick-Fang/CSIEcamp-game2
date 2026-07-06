@@ -30,7 +30,8 @@
                     <h2>🏝️ 1. 設定小隊</h2>
                     <form id="setup-form">
                         <div class="grid-2" id="setup-inputs" style="margin-bottom: 1.5rem;"></div>
-                        <button type="submit" class="btn btn-success" style="width: 100%;">開始遊戲</button>
+                        <div id="ready-status-text" style="text-align:center; margin-bottom:1rem; color:var(--danger-red); font-weight:bold;">正在等待所有小隊準備... (0/10)</div>
+                        <button id="start-game-btn" type="submit" class="btn btn-success" style="width: 100%; opacity: 0.5; pointer-events: none;" disabled>開始遊戲</button>
                     </form>
                 </section>
 

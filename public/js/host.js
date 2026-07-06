@@ -1,32 +1,52 @@
 const engine = new GameEngine();
-const projectorWindows = new Set();
+let serverTeamActions = {};
+let serverReadyCount = 0; // 全域儲存準備人數，render() 每次都重新判斷
 
-function openProjector() {
-    const win = window.open('projector.html', '_blank');
-    if (win) {
-        projectorWindows.add(win);
-        setTimeout(() => win.postMessage({ type: 'COCONUT_STATE_UPDATE', state: engine.state }, '*'), 500);
-    }
+function syncStateToServer() {
+    fetch('/api/state', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({game_state: engine.state})
+    }).catch(e => console.log(e));
 }
 
-function broadcastMessage(msg) {
-    projectorWindows.forEach(win => {
-        if (win.closed) projectorWindows.delete(win);
-        else win.postMessage(msg, '*');
-    });
+function pollServer() {
+    fetch('/api/state')
+        .then(res => res.json())
+        .then(data => {
+            if (data.team_actions) {
+                serverTeamActions = data.team_actions;
+            }
+            if (data.ready_teams !== undefined) {
+                serverReadyCount = data.ready_teams.length;
+            }
+            render(); // render() 負責重新套用按鈕鎖定
+        })
+        .catch(e => console.log(e));
 }
 
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'COCONUT_REQUEST_STATE') {
-        projectorWindows.add(event.source);
-        event.source.postMessage({ type: 'COCONUT_STATE_UPDATE', state: engine.state }, '*');
+setInterval(pollServer, 1000);
+
+// Timer Tick
+setInterval(() => {
+    if (engine.state.phase === "ENCOUNTER_BID" && engine.state.timeLeft > 0) {
+        engine.state.timeLeft -= 1;
+        syncStateToServer();
+        render(); // update timer UI
+        
+        if (engine.state.timeLeft <= 0) {
+            // Auto submit
+            engine.submitCards(serverTeamActions);
+            syncStateToServer();
+            render();
+        }
     }
-});
+}, 1000);
 
 document.addEventListener("DOMContentLoaded", () => {
     render();
-    window.addEventListener("storage", (e) => { if (e.key === "coconut_game2_state") { engine.loadState(); render(); } });
-    window.addEventListener("state_updated", () => { render(); broadcastMessage({ type: 'COCONUT_STATE_UPDATE', state: engine.state }); });
+    window.addEventListener("state_updated", () => { render(); syncStateToServer(); });
+    syncStateToServer();
     
     const setupInputs = document.getElementById("setup-inputs");
     for (let i = 1; i <= 10; i++) {
@@ -35,25 +55,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("setup-form").addEventListener("submit", e => {
         e.preventDefault();
+        // 雙重保險：即使按鈕被繞過（如 Enter 鍵），也必須所有小隊都準備好才能開始
+        if (serverReadyCount < 10) {
+            alert(`⚠️ 請等待所有小隊按下準備好了！\n目前 ${serverReadyCount}/10 小隊已準備。`);
+            return;
+        }
         const names = [];
         for (let i = 1; i <= 10; i++) names.push(e.target.elements[`team-${i}`].value.trim());
         engine.initTeams(names);
+        // Clear ready list after game starts so next reset works correctly
+        fetch('/api/state', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ game_state: engine.state, clear_ready: true, clear_actions: true })
+        }).catch(e => console.log(e));
     });
 
     document.getElementById("bid-form").addEventListener("submit", e => {
         e.preventDefault();
-        const bids = {};
-        document.querySelectorAll(".card-select-group").forEach(group => {
-            const teamId = group.dataset.teamId;
-            const cardSelect = group.querySelector(".card-select");
-            const targetSelect = group.querySelector(".target-select");
-            
-            bids[teamId] = {
-                cardId: cardSelect.value,
-                targetId: targetSelect.style.display !== "none" ? targetSelect.value : null
-            };
-        });
-        engine.submitCards(bids);
+        // 手動結算時，使用 server 收集到的 actions
+        engine.submitCards(serverTeamActions);
+        syncStateToServer();
+        render();
     });
 });
 
@@ -87,6 +110,23 @@ function render() {
 
     if (state.phase === "SETUP") {
         document.getElementById("phase-setup").style.display = "block";
+        // 每次渲染都重新套用鎖定——確保不受 pollServer 時序影響
+        const statusText = document.getElementById("ready-status-text");
+        const startBtn = document.getElementById("start-game-btn");
+        if (serverReadyCount >= 10) {
+            statusText.textContent = `所有小隊已準備完畢！ (10/10)`;
+            statusText.style.color = "var(--success-green)";
+            startBtn.style.opacity = "1";
+            startBtn.style.pointerEvents = "auto";
+            startBtn.disabled = false;
+        } else {
+            statusText.textContent = `正在等待所有小隊準備... (${serverReadyCount}/10)`;
+            statusText.style.color = "var(--danger-red)";
+            startBtn.style.opacity = "0.5";
+            startBtn.style.pointerEvents = "none";
+            startBtn.disabled = true; // 雙重保險：disabled 屬性也一起鎖
+        }
+
     } else if (state.phase === "ENCOUNTER_BID") {
         renderBidPhase(state);
         document.getElementById("phase-encounter-bid").style.display = "block";
@@ -108,9 +148,11 @@ function renderBidPhase(state) {
     const m = engine.getCurrentMonster();
     if (m) {
         document.getElementById("bid-monster-name").textContent = m.name;
-        document.getElementById("bid-monster-cards").innerHTML = engine.getMonsterCards(m).map(c => 
-            `<div style="margin-bottom:0.5rem;"><strong>卡 ${c.id}:</strong> ${c.desc}</div>`
-        ).join("");
+        document.getElementById("bid-monster-cards").innerHTML = engine.getMonsterCards(m).map(c => {
+            const desc = c.condition || c.desc;
+            const tags = c.tags ? c.tags.map(t => `<span style="background:#fde047; color:#000; padding:2px 4px; border-radius:4px; font-size:0.8rem; margin-right:4px;">${t}</span>`).join('') : '';
+            return `<div style="margin-bottom:0.5rem;"><strong>卡 ${c.id}:</strong> ${desc} <br>${tags}</div>`;
+        }).join("");
     }
 
     const tbody = document.getElementById("bid-inputs-tbody");
@@ -121,24 +163,22 @@ function renderBidPhase(state) {
         targetOptions += `<option value="${t.id}">${t.name} (${t.status})</option>`;
     });
 
-    tbody.innerHTML = state.teams.map(t => {
+    const timerHtml = `<div style="font-size: 2rem; color: red; text-align: center; margin-bottom: 1rem;">倒數計時: ${state.timeLeft} 秒</div>`;
+    
+    tbody.innerHTML = `<tr><td colspan="2">${timerHtml}</td></tr>` + state.teams.map(t => {
         if (t.status !== "active") return `<tr style="opacity:0.5"><td>${t.name} (${t.status})</td><td>-</td></tr>`;
+        
+        const action = serverTeamActions[t.id];
+        let statusHtml = "<span style='color:red;'>尚未選擇</span>";
+        if (action && action.cardId) {
+            statusHtml = `<span style='color:green;'>已選擇卡片 ${action.cardId}</span>`;
+            if (action.targetId) statusHtml += ` (目標: 小隊${action.targetId})`;
+        }
+        
         return `
             <tr>
                 <td><strong>${t.name}</strong> <br><small>HP: ${t.hp} | 袋中: ${t.roundCoconuts}</small></td>
-                <td>
-                    <div class="card-select-group" data-team-id="${t.id}" style="display:flex; gap:0.5rem;">
-                        <select class="card-select form-input" onchange="toggleTarget(this, '${m.name}')">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                        </select>
-                        <select class="target-select form-input" style="display:none;">
-                            ${targetOptions}
-                        </select>
-                    </div>
-                </td>
+                <td>${statusHtml}</td>
             </tr>
         `;
     }).join("");
@@ -149,14 +189,13 @@ window.toggleTarget = function(selectEl, monsterName) {
     const targetSelect = selectEl.parentElement.querySelector(".target-select");
     
     // 大祭司卡 4 或 海神卡 3 或 寶箱 2, 3 需要目標
-    if ((monsterName === "枯朽椰骸大祭司" && val == "4") || 
-        (monsterName === "海溝腐椰海神" && val == "3") ||
-        (monsterName === "椰子寶箱" && (val == "2" || val == "3"))) {
+    if ((monsterName === "枯朽椰骸大祭司" && val == "3") || 
+                (monsterName === "椰子寶箱" && val == "2")) {
         targetSelect.style.display = "block";
         targetSelect.required = true;
         
         // 大祭司復活：只能選目前陣亡的隊伍 (非 active)
-        if (monsterName === "枯朽椰骸大祭司" && val == "4") {
+        if (monsterName === "枯朽椰骸大祭司" && val == "3") {
             Array.from(targetSelect.options).forEach(opt => {
                 if (opt.value === "") return;
                 if (opt.textContent.includes("(active)")) {
@@ -183,6 +222,26 @@ window.toggleTarget = function(selectEl, monsterName) {
     }
 }
 
-function nextEncounter() { engine.nextEncounter(); }
+function nextEncounter() {
+    engine.nextEncounter();
+    // Clear server-side team actions so teams can pick cards again
+    fetch('/api/state', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ game_state: engine.state, clear_actions: true })
+    }).catch(e => console.log(e));
+    serverTeamActions = {};
+    render();
+}
 function nextRound() { engine.nextRound(); }
-function resetGame() { if(confirm("確定重置?")) engine.resetGame(); }
+function resetGame() {
+    if(confirm("確定重置?")) {
+        engine.resetGame();
+        fetch('/api/state', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ game_state: engine.state, clear_actions: true, clear_ready: true })
+        }).catch(e => console.log(e));
+        serverTeamActions = {};
+    }
+}
