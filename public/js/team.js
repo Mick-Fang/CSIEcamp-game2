@@ -10,7 +10,7 @@ let myTeamData = null;
 let lastEncounterIndex = -1;
 
 function pollServer() {
-    fetch('/api/state')
+    fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.game_state && Object.keys(data.game_state).length > 0) {
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("ready-btn").style.opacity = "0.7";
         document.getElementById("ready-btn").style.pointerEvents = "none";
         
-        fetch('/api/ready', {
+        fetch('/csiecamp_game2/api/ready', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teamId: teamId })
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hasSubmitted = true;
         render();
 
-        fetch('/api/action', {
+        fetch('/csiecamp_game2/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -152,7 +152,7 @@ function render() {
 
         currentMonster = engine.getCurrentMonster();
         if (currentMonster) {
-            document.getElementById("monster-img").src = "/" + currentMonster.img;
+            document.getElementById("monster-img").src = "/csiecamp_game2/" + currentMonster.img;
             document.getElementById("monster-name").textContent = currentMonster.name;
             document.getElementById("monster-desc").textContent = currentMonster.desc;
 

@@ -70,7 +70,7 @@ function sendJSON(res, data, status = 200) {
 
 // ── 請求處理 ────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
-    const url = req.url.split('?')[0];
+    const originalUrl = req.url.split('?')[0];
     const method = req.method;
 
     // ── CORS preflight
@@ -79,6 +79,20 @@ const server = http.createServer(async (req, res) => {
         res.end();
         return;
     }
+
+    const PREFIX = '/csiecamp_game2';
+    if (!originalUrl.startsWith(PREFIX)) {
+        if (originalUrl === '/') {
+            res.writeHead(302, { 'Location': PREFIX + '/host' });
+            res.end();
+            return;
+        }
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found (Please access via ' + PREFIX + '/host)');
+        return;
+    }
+
+    const url = originalUrl.substring(PREFIX.length) || '/';
 
     // ══ GET /api/state ══════════════════════════════════════
     if (method === 'GET' && url === '/api/state') {
@@ -150,10 +164,10 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('==========================================');
     console.log(`🌴 伺服器已啟動於 Port ${PORT} 🌴`);
     console.log('==========================================');
-    console.log(`[主持人後台]: http://localhost:${PORT}/host`);
-    console.log(`[大螢幕投影]: http://localhost:${PORT}/projector`);
+    console.log(`[主持人後台]: http://localhost:${PORT}/csiecamp_game2/host`);
+    console.log(`[大螢幕投影]: http://localhost:${PORT}/csiecamp_game2/projector`);
     console.log(`[各小隊手機連線網址]:`);
-    console.log(`👉 http://${ip}:${PORT}/team/1`);
+    console.log(`👉 http://${ip}:${PORT}/csiecamp_game2/team/1`);
     console.log(`👉 (將 1 替換為 1~10 各小隊編號)`);
     console.log('==========================================');
 });

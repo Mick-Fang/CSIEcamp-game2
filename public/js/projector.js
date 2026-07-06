@@ -1,7 +1,7 @@
 const engine = new GameEngine();
 
 function pollServer() {
-    fetch('/api/state')
+    fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.game_state && Object.keys(data.game_state).length > 0) {

@@ -3,7 +3,7 @@ let serverTeamActions = {};
 let serverReadyCount = 0; // 全域儲存準備人數，render() 每次都重新判斷
 
 function syncStateToServer() {
-    fetch('/api/state', {
+    fetch('/csiecamp_game2/api/state', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({game_state: engine.state})
@@ -11,7 +11,7 @@ function syncStateToServer() {
 }
 
 function pollServer() {
-    fetch('/api/state')
+    fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.team_actions) {
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let i = 1; i <= 10; i++) names.push(e.target.elements[`team-${i}`].value.trim());
         engine.initTeams(names);
         // Clear ready list after game starts so next reset works correctly
-        fetch('/api/state', {
+        fetch('/csiecamp_game2/api/state', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ game_state: engine.state, clear_ready: true, clear_actions: true })
@@ -225,7 +225,7 @@ window.toggleTarget = function(selectEl, monsterName) {
 function nextEncounter() {
     engine.nextEncounter();
     // Clear server-side team actions so teams can pick cards again
-    fetch('/api/state', {
+    fetch('/csiecamp_game2/api/state', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ game_state: engine.state, clear_actions: true })
@@ -237,7 +237,7 @@ function nextRound() { engine.nextRound(); }
 function resetGame() {
     if(confirm("確定重置?")) {
         engine.resetGame();
-        fetch('/api/state', {
+        fetch('/csiecamp_game2/api/state', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ game_state: engine.state, clear_actions: true, clear_ready: true })
