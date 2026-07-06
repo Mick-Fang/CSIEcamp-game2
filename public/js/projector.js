@@ -21,9 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function render() {
     const state = engine.state;
     
-    document.getElementById("proj-round").textContent = state.roundNum;
     const displayNum = state.encounterIndex - (state.extraEncounters || 0) + 1;
-    document.getElementById("proj-encounter").textContent = `${displayNum} / 11`;
+    document.getElementById("proj-encounter").textContent = displayNum;
 
     document.getElementById("view-setup").style.display = "none";
     document.getElementById("view-encounter").style.display = "none";

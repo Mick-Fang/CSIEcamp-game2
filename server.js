@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 8000;
+const PORT = 8765;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // ── 伺服器狀態 ──────────────────────────────────────────────

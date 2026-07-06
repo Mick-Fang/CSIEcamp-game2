@@ -211,7 +211,7 @@ class GameEngine {
         this.state.timeLeft = 99;
         this.state.timeLeft = 99;
         this.state.battleLogs = ["遊戲開始！已生成怪物序列。"];
-        this.addLog(`第 1 回合開始，遭遇第一隻怪物！`);
+        this.addLog(`遊戲開始，遭遇第一隻怪物！`);
         this.saveState();
     }
 
@@ -606,7 +606,7 @@ class GameEngine {
         });
 
         const m = this.getCurrentMonster();
-        this.addLog(`=== 第 ${this.state.roundNum} 回合開始 ===`);
+        this.addLog(`=== 全新遊戲開始 ===`);
         this.addLog(`遭遇第一隻怪物：【${m.name}】`);
         this.saveState();
     }

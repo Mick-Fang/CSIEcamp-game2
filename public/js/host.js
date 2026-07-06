@@ -83,9 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function render() {
     const state = engine.state;
     
-    document.querySelectorAll(".info-round").forEach(el => el.textContent = state.roundNum);
     const displayNum = state.encounterIndex - (state.extraEncounters || 0) + 1;
-    document.querySelectorAll(".info-encounter").forEach(el => el.textContent = `${displayNum} / 11`);
+    document.querySelectorAll(".info-encounter").forEach(el => el.textContent = displayNum);
 
     document.getElementById("battle-logs-box").innerHTML = state.battleLogs.map(l => `<div class="log-entry">${l}</div>`).join("");
 
