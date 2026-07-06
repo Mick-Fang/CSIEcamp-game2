@@ -35,14 +35,14 @@ async function pollServer() {
 setInterval(pollServer, 1000);
 
 // Timer Tick
-setInterval(async () => {
+setInterval(() => {
     if (engine.state.phase === "ENCOUNTER_BID" && engine.state.timeLeft > 0 && !isSubmitting) {
         engine.state.timeLeft -= 1;
         syncStateToServer();
         render();
         
         if (engine.state.timeLeft <= 0) {
-            await doSubmit();
+            doSubmit();
         }
     }
 }, 1000);
@@ -75,29 +75,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(e => console.log(e));
     });
 
-    document.getElementById("bid-form").addEventListener("submit", async e => {
+    document.getElementById("bid-form").addEventListener("submit", e => {
         e.preventDefault();
-        await doSubmit();
+        doSubmit();
     });
 });
 
-async function doSubmit() {
+function doSubmit() {
     if (isSubmitting) return;
     isSubmitting = true;
-    document.getElementById("phase-encounter-bid").style.display = "none";
     
-    await engine.submitCards(serverTeamActions, async (stepLabel, animatingTeamIds) => {
-        // 更新 animatingTeams 讓 projector 知道哪些隊伍要震動
-        engine.state.animatingTeams = animatingTeamIds;
-        engine.state.animationLabel = stepLabel;
-        await syncStateToServer(false);
-        render();
-        await sleep(1800);
-    });
-    
-    engine.state.animatingTeams = [];
-    engine.state.animationLabel = "";
-    await syncStateToServer(true);
+    engine.submitCards(serverTeamActions);
+    syncStateToServer(true);
     serverTeamActions = {};
     isSubmitting = false;
     render();

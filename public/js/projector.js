@@ -1,10 +1,18 @@
 const engine = new GameEngine();
+let previousHPs = {}; // Track previous HP for shake detection
+let shakeTimers = {}; // Track shake animation timers
 
 function pollServer() {
     fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.game_state && Object.keys(data.game_state).length > 0) {
+                // Before updating state, snapshot current HPs
+                if (engine.state.teams) {
+                    engine.state.teams.forEach(t => {
+                        previousHPs[t.id] = t.hp;
+                    });
+                }
                 engine.state = data.game_state;
                 render();
             }
@@ -29,8 +37,6 @@ function render() {
     document.getElementById("view-round-end").style.display = "none";
 
     // 渲染下方小隊網格
-    const animatingTeams = state.animatingTeams || [];
-    const animationLabel = state.animationLabel || "";
     document.getElementById("teams-grid").innerHTML = state.teams.map(t => {
         let statusText = "🛡️ 探索中";
         let statusColor = "var(--ocean-medium)";
@@ -54,11 +60,12 @@ function render() {
             </div>`;
         }
 
-        const isAnimating = animatingTeams.includes(t.id);
-        const animClass = isAnimating ? "shake-anim" : "";
+        // Detect HP decrease → shake animation
+        const prevHP = previousHPs[t.id];
+        const hpDecreased = (prevHP !== undefined && t.hp < prevHP);
 
         return `
-            <div class="team-box ${t.status} ${animClass}">
+            <div class="team-box ${t.status}" id="team-box-${t.id}">
                 <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
                 <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>
                 ${cardIndicator}
@@ -69,6 +76,23 @@ function render() {
             </div>
         `;
     }).join("");
+
+    // After rendering, trigger shake for teams whose HP decreased
+    state.teams.forEach(t => {
+        const prevHP = previousHPs[t.id];
+        if (prevHP !== undefined && t.hp < prevHP) {
+            const el = document.getElementById(`team-box-${t.id}`);
+            if (el) {
+                el.classList.add("shake-anim");
+                // Clear any existing timer for this team
+                if (shakeTimers[t.id]) clearTimeout(shakeTimers[t.id]);
+                // Remove shake after 2 seconds
+                shakeTimers[t.id] = setTimeout(() => {
+                    el.classList.remove("shake-anim");
+                }, 2000);
+            }
+        }
+    });
 
     if (state.phase === "SETUP") {
         document.getElementById("view-setup").style.display = "block";
@@ -96,9 +120,6 @@ function render() {
         if (state.phase === "ENCOUNTER_RESULT") {
             resText.innerHTML = "⚡ 結算完畢！請查看各小隊狀態變化 ⚡";
             resText.style.color = "var(--success-green)";
-        } else if (animationLabel) {
-            resText.innerHTML = `⚡ <strong style="color:#fde047;">${animationLabel}</strong> 結算中...`;
-            resText.style.color = "#f59e0b";
         } else {
             resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${state.timeLeft}</span> 秒`;
             resText.style.color = "#94a3b8";
@@ -118,25 +139,24 @@ function render() {
     }
 }
 
+// Shake animation CSS
 const style = document.createElement('style');
 style.innerHTML = `
 @keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-4px, -2px); }
+  20% { transform: translate(4px, 2px); }
+  30% { transform: translate(-4px, 0px); }
+  40% { transform: translate(4px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  60% { transform: translate(4px, 0px); }
+  70% { transform: translate(-4px, -2px); }
+  80% { transform: translate(2px, 2px); }
+  90% { transform: translate(-2px, -2px); }
 }
 .shake-anim {
-  animation: shake 0.5s;
-  animation-iteration-count: infinite;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.8) !important;
+  animation: shake 0.4s ease-in-out infinite;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.9) !important;
   border-color: #ef4444 !important;
 }
 `;
