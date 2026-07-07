@@ -1,6 +1,6 @@
 const engine = new GameEngine();
-let teamId = parseInt(window.location.pathname.split('/').pop()) || 1;
-if (isNaN(teamId) || teamId < 1 || teamId > 10) teamId = 1;
+let teamId = parseInt(window.location.pathname.split('/').pop());
+if (isNaN(teamId) || teamId < 0 || teamId > 9) teamId = 0;
 
 let currentSelectedCardId = null;
 let currentMonster = null;
@@ -9,12 +9,17 @@ let myTeamData = null;
 
 let lastEncounterIndex = -1;
 
+// Local display timer - smooth countdown independent of server poll rate
+let localTimeLeft = 99;
+let lastKnownPhase = null;
+
 function pollServer() {
     fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.game_state && Object.keys(data.game_state).length > 0) {
-                engine.state = data.game_state;
+                const newState = data.game_state;
+                engine.state = newState;
                 
                 const currentIdx = engine.state.encounterIndex;
                 const myAction = data.team_actions && data.team_actions[teamId];
@@ -28,11 +33,27 @@ function pollServer() {
                     hasSubmitted = true;
                 }
 
+                // Sync local timer if phase changed or server value diverges by more than 2
+                if (newState.phase !== lastKnownPhase ||
+                    Math.abs(newState.timeLeft - localTimeLeft) > 2) {
+                    localTimeLeft = newState.timeLeft;
+                }
+                lastKnownPhase = newState.phase;
+
                 render();
             }
         })
         .catch(e => console.log(e));
 }
+
+// Local 1-second countdown - runs independently from server poll
+setInterval(() => {
+    if (engine.state.phase === 'ENCOUNTER_BID' && localTimeLeft > 0) {
+        localTimeLeft -= 1;
+        const timerEl = document.getElementById('timer');
+        if (timerEl) timerEl.textContent = localTimeLeft;
+    }
+}, 1000);
 
 setInterval(pollServer, 1000);
 
@@ -148,7 +169,7 @@ function render() {
     if (state.phase === "ENCOUNTER_BID") {
         document.getElementById("wait-view").style.display = "none";
         document.getElementById("game-view").style.display = "block";
-        document.getElementById("timer").textContent = state.timeLeft;
+        document.getElementById("timer").textContent = localTimeLeft;
 
         currentMonster = engine.getCurrentMonster();
         if (currentMonster) {

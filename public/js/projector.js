@@ -2,6 +2,10 @@ const engine = new GameEngine();
 let previousHPs = {}; // Track previous HP for shake detection
 let shakeTimers = {}; // Track shake animation timers
 
+// Local display timer - smooth countdown independent of server poll rate
+let localTimeLeft = 99;
+let lastKnownPhase = null;
+
 function pollServer() {
     fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
@@ -13,12 +17,32 @@ function pollServer() {
                         previousHPs[t.id] = t.hp;
                     });
                 }
-                engine.state = data.game_state;
+                const newState = data.game_state;
+                // Sync local timer if phase changed or server value diverges by more than 2
+                if (newState.phase !== lastKnownPhase ||
+                    Math.abs(newState.timeLeft - localTimeLeft) > 2) {
+                    localTimeLeft = newState.timeLeft;
+                }
+                lastKnownPhase = newState.phase;
+                engine.state = newState;
                 render();
             }
         })
         .catch(e => console.log(e));
 }
+
+// Local 1-second countdown - runs independently from server poll
+setInterval(() => {
+    if (engine.state.phase === 'ENCOUNTER_BID' && localTimeLeft > 0) {
+        localTimeLeft -= 1;
+        // Update just the timer display without full re-render
+        const resText = document.getElementById('proj-result-text');
+        if (resText && engine.state.phase === 'ENCOUNTER_BID') {
+            resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${localTimeLeft}</span> 秒`;
+            resText.style.color = '#94a3b8';
+        }
+    }
+}, 1000);
 
 setInterval(pollServer, 1000);
 
@@ -121,7 +145,7 @@ function render() {
             resText.innerHTML = "⚡ 結算完畢！請查看各小隊狀態變化 ⚡";
             resText.style.color = "var(--success-green)";
         } else {
-            resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${state.timeLeft}</span> 秒`;
+            resText.innerHTML = `⏳ 剩餘時間: <span style="color:red; font-size:1.8rem; font-weight:bold;">${localTimeLeft}</span> 秒`;
             resText.style.color = "#94a3b8";
         }
 

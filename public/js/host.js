@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     syncStateToServer();
     
     const setupInputs = document.getElementById("setup-inputs");
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 0; i < 10; i++) {
         setupInputs.innerHTML += `<div><label>小隊 ${i}</label><input type="text" class="form-input" name="team-${i}" value="第 ${i} 小隊"></div>`;
     }
 
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         const names = [];
-        for (let i = 1; i <= 10; i++) names.push(e.target.elements[`team-${i}`].value.trim());
+        for (let i = 0; i < 10; i++) names.push(e.target.elements[`team-${i}`].value.trim());
         engine.initTeams(names);
         // Clear ready list after game starts so next reset works correctly
         await fetch('/csiecamp_game2/api/state', {

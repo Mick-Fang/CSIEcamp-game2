@@ -105,8 +105,8 @@ const MONSTERS = [
 
 const DEFAULT_STATE = {
     teams: Array.from({ length: 10 }, (_, i) => ({
-        id: i + 1,
-        name: `第 ${i + 1} 小隊`,
+        id: i,
+        name: `第 ${i} 小隊`,
         hp: 100,
         roundCoconuts: 0,
         totalCoconuts: 0,
@@ -171,7 +171,7 @@ class GameEngine {
         let gameStartedBefore = this.state ? this.state.gameStartedBefore : false;
 
         this.state.teams.forEach((t, i) => {
-            t.name = names[i] || `第 ${i + 1} 小隊`;
+            t.name = names[i] || `第 ${i} 小隊`;
             t.hp = 100;
             t.roundCoconuts = 0;
             t.totalCoconuts = 0;
@@ -227,16 +227,6 @@ class GameEngine {
         const monsterIdx = this.state.monsterSequence[this.state.encounterIndex];
         const globalBuff = this.state.globalBuffs[monsterIdx];
         
-        if (monster.name === "遠古珊瑚椰石像") {
-            const gc = this.state.golemCounters;
-            const remaining1 = Math.max(0, 10 - gc.opt1);
-            const remaining2 = Math.max(0, 8 - gc.opt2);
-            const remaining3 = Math.max(0, 4 - gc.opt3);
-            if(cards[0]) cards[0].condition = `累計${remaining1}個隊伍選擇此選項後，受到100傷害。`;
-            if(cards[1]) cards[1].condition = `累計${remaining2}個隊伍選擇此選項後，受到80傷害。`;
-            if(cards[2]) cards[2].condition = `累計${remaining3}個隊伍選擇此選項後，下隻怪物技能卡1造成的傷害永久+10。`;
-        }
-
         // Show globalBuff damage bonuses on card descriptions for any monster
         if (globalBuff && (globalBuff.all > 0 || globalBuff.opt1 > 0)) {
             cards.forEach((c, i) => {
