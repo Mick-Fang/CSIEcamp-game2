@@ -406,9 +406,10 @@ class GameEngine {
         
         // 風暴椰鱗巨翼龍
         if (monster.name === "風暴椰鱗巨翼龍") {
+            if (counts[1] < 7) this.state.dragonRepeatTriggered = true;
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
-                    addCoconuts(t, -2, true); if (counts[1] < 7) this.state.dragonRepeatTriggered = true;
+                    addCoconuts(t, -2, true);
                 }
             });
             if (onStepDone) await onStepDone();
