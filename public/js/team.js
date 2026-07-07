@@ -1,6 +1,9 @@
 const engine = new GameEngine();
 let teamId = parseInt(window.location.pathname.split('/').pop());
-if (isNaN(teamId) || teamId < 0 || teamId > 9) teamId = 0;
+if (isNaN(teamId) || teamId < 0 || teamId > 9) {
+    document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:20vh;'>無效的小隊編號 (請使用 0~9)</h1>";
+    throw new Error("Invalid team ID");
+}
 
 let currentSelectedCardId = null;
 let currentMonster = null;
