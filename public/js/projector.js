@@ -69,7 +69,7 @@ function render() {
 
         let cardIndicator = "";
         if (state.phase === "ENCOUNTER_RESULT" && t.selectedCardId) {
-            cardIndicator = `<div style="font-size: 1.1rem; color: #fde047; margin-bottom: 0.5rem; font-weight: bold;">(選擇卡片 ${t.selectedCardId})</div>`;
+            cardIndicator = `<div style="font-size: 1.1rem; color: #fde047; margin-bottom: 0.5rem; font-weight: bold;">(選擇選項 ${t.selectedCardId})</div>`;
         }
 
         let debuffList = [];

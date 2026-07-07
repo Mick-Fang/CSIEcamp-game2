@@ -477,18 +477,18 @@ class GameEngine {
         // 終焉滅世巨椰祖靈
         if (monster.name === "終焉滅世巨椰祖靈") {
             if (counts[1] === 0) {
-                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡1無人選制裁"));
-                this.addLog(`祖靈震怒：卡1無人選擇，所有人承受 90 點傷害！`);
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈選項1無人選制裁"));
+                this.addLog(`祖靈震怒：選項1無人選擇，所有人承受 90 點傷害！`);
             }
             if (onStepDone) await onStepDone();
             if (counts[2] === 0) {
-                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡2無人選制裁"));
-                this.addLog(`祖靈震怒：卡2無人選擇，所有人承受 90 點傷害！`);
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈選項2無人選制裁"));
+                this.addLog(`祖靈震怒：選項2無人選擇，所有人承受 90 點傷害！`);
             }
             if (onStepDone) await onStepDone();
             if (counts[3] === 0) {
-                activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡3無人選制裁"));
-                this.addLog(`祖靈震怒：卡3無人選擇，所有人承受 90 點傷害！`);
+                activeTeams.forEach(t => applyDamage(t, 90, "祖靈選項3無人選制裁"));
+                this.addLog(`祖靈震怒：選項3無人選擇，所有人承受 90 點傷害！`);
             }
         }
 
@@ -528,7 +528,7 @@ class GameEngine {
                     t.hp = 100;
                     t.debuffs.golemCurseDmg = 0; // 休息清除異常
                     t.debuffs.deathDoomCount = -1;
-                    // crabNextEncounterDmg 只有特殊說明不能清，所以這裡正常是可以清的，但題意說"此次休息整備不能移除異常"，是指螃蟹卡3本身
+                    // crabNextEncounterDmg 只有特殊說明不能清，所以這裡正常是可以清的，但題意說"此次休息整備不能移除異常"，是指螃蟹選項3本身
                     // 所以螃蟹印記不隨便清。
                     
                     t.lastActionLog = `${logs[t.id].join(', ')} -> 休息整備！帶走 ${gained} 椰子，血量重置。`;

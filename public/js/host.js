@@ -157,7 +157,7 @@ function render() {
             .filter(t => t.selectedCardId)
             .map(t => {
                 let targetText = t.selectedTargetId ? ` [目標: 小隊${t.selectedTargetId}]` : "";
-                return `<li><strong>${t.name}</strong> (卡${t.selectedCardId}${targetText}): ${t.lastActionLog}</li>`;
+                return `<li><strong>${t.name}</strong> (選項${t.selectedCardId}${targetText}): ${t.lastActionLog}</li>`;
             })
             .join("");
         document.getElementById("phase-encounter-result").style.display = "block";
@@ -173,7 +173,7 @@ function renderBidPhase(state) {
         document.getElementById("bid-monster-cards").innerHTML = engine.getMonsterCards(m).map(c => {
             const desc = c.condition || c.desc;
             const tags = c.tags ? c.tags.map(t => `<span style="background:#fde047; color:#000; padding:2px 4px; border-radius:4px; font-size:0.8rem; margin-right:4px;">${t}</span>`).join('') : '';
-            return `<div style="margin-bottom:0.5rem;"><strong>卡 ${c.id}:</strong> ${desc} <br>${tags}</div>`;
+            return `<div style="margin-bottom:0.5rem;"><strong>選項 ${c.id}:</strong> ${desc} <br>${tags}</div>`;
         }).join("");
     }
 
@@ -193,7 +193,7 @@ function renderBidPhase(state) {
         const action = serverTeamActions[t.id];
         let statusHtml = "<span style='color:red;'>尚未選擇</span>";
         if (action && action.cardId) {
-            statusHtml = `<span style='color:green;'>已選擇卡片 ${action.cardId}</span>`;
+            statusHtml = `<span style='color:green;'>已選擇選項 ${action.cardId}</span>`;
             if (action.targetId) statusHtml += ` (目標: 小隊${action.targetId})`;
         }
         
@@ -210,7 +210,7 @@ window.toggleTarget = function(selectEl, monsterName) {
     const val = selectEl.value;
     const targetSelect = selectEl.parentElement.querySelector(".target-select");
     
-    // 大祭司卡 4 或 海神卡 3 或 寶箱 2, 3 需要目標
+    // 大祭司選項 4 或 海神選項 3 或 寶箱 2, 3 需要目標
     if ((monsterName === "枯朽椰骸大祭司" && val == "3") || 
                 (monsterName === "椰子寶箱" && val == "2")) {
         targetSelect.style.display = "block";
