@@ -259,6 +259,7 @@ class GameEngine {
 
         let activeCountBefore = 0;
         const activeTeams = this.state.teams.filter(t => t.status === "active");
+        if (Object.keys(cardSelections).length === 0) alert("嚴重錯誤：cardSelections為空！伺服器沒有收到小隊選項！");
 
         // Prepare choices
         activeTeams.forEach(t => {

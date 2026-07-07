@@ -16,7 +16,7 @@ class GameRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory="public", **kwargs)
 
     def do_GET(self):
-        if self.path == '/api/state':
+        if self.path == '/api/state' or self.path == '/csiecamp_game2/api/state':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -29,15 +29,15 @@ class GameRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
         
         # Route /team/X to /team.html
-        if self.path.startswith('/team/'):
+        if self.path.startswith('/team/') or self.path.startswith('/csiecamp_game2/team/'):
             self.path = '/team.html'
             return super().do_GET()
         
-        if self.path == '/host':
+        if self.path == '/host' or self.path == '/csiecamp_game2/host':
             self.path = '/host.html'
             return super().do_GET()
             
-        if self.path == '/projector':
+        if self.path == '/projector' or self.path == '/csiecamp_game2/projector':
             self.path = '/projector.html'
             return super().do_GET()
 
@@ -46,7 +46,7 @@ class GameRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         global game_state, team_actions
         
-        if self.path == '/api/state':
+        if self.path == '/api/state' or self.path == '/csiecamp_game2/api/state':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data)
@@ -63,7 +63,7 @@ class GameRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
             return
 
-        if self.path == '/api/ready':
+        if self.path == '/api/ready' or self.path == '/csiecamp_game2/api/ready':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data)
@@ -78,7 +78,7 @@ class GameRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
             return
 
-        if self.path == '/api/action':
+        if self.path == '/api/action' or self.path == '/csiecamp_game2/api/action':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data)
