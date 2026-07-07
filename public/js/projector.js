@@ -62,7 +62,7 @@ function render() {
 
     // 渲染下方小隊網格
     document.getElementById("teams-grid").innerHTML = state.teams.map(t => {
-        let statusText = "🛡️ 探索中";
+        let statusText = "";
         let statusColor = "var(--ocean-medium)";
         if (t.status === "escaped") { statusText = "🏕️ 休息整備"; statusColor = "var(--success-green)"; }
         else if (t.status === "dead") { statusText = "💀 陣亡"; statusColor = "var(--danger-red)"; }
@@ -91,7 +91,7 @@ function render() {
         return `
             <div class="team-box ${t.status}" id="team-box-${t.id}">
                 <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
-                <div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>
+                ${statusText ? `<div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>` : ""}
                 ${cardIndicator}
                 ${debuffHtml}
                 <div style="font-size: 1.1rem; margin-bottom: 0.2rem;">💖 HP: <span style="font-size:1.5rem; font-weight:bold;">${t.hp}</span></div>
@@ -132,7 +132,7 @@ function render() {
                 const tags = c.tags ? c.tags.map(t => `<span style="background:#fde047; color:#000; padding:2px 6px; border-radius:4px; font-size:0.9rem; margin-right:8px; font-weight:bold;">${t}</span>`).join('') : '';
                 return `
                 <div class="glass-card" style="text-align:left; border-left: 6px solid #475569; flex: 1; padding: 0.75rem 1rem;">
-                    <h4 style="color:#fde047; margin-bottom:0.25rem; font-size:1.1rem;">📜 技能卡 ${c.id}</h4>
+                    <h4 style="color:#fde047; margin-bottom:0.25rem; font-size:1.1rem;">📜 選項 ${c.id}</h4>
                     <div style="font-size:1rem; line-height:1.4; color: #e2e8f0; margin-bottom:0.25rem;">${desc}</div>
                     <div>${tags}</div>
                 </div>

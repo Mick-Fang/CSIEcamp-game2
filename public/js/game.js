@@ -56,8 +56,8 @@ const MONSTERS = [
         img: "assets/crab_rider.png",
         desc: "騎乘深海椰子蟹的怨靈。",
         cards: [
-            { id: 1, condition: "選擇此選項的小隊中，袋子內椰子最少者受到60傷害。同時最多者全部皆會受傷。", tags: ["獲得一顆椰子"], escape: false },
-            { id: 2, condition: "選擇此選項的小隊中，袋子內椰子最多者受到70傷害。同時最少者全部皆會受傷。", tags: ["獲得兩顆椰子"], escape: false },
+            { id: 1, condition: "選擇此選項的小隊中，袋子內椰子最少者受到60傷害。同時最少者全部皆會受傷。", tags: ["獲得一顆椰子"], escape: false },
+            { id: 2, condition: "選擇此選項的小隊中，袋子內椰子最多者受到70傷害。同時最多者全部皆會受傷。", tags: ["獲得兩顆椰子"], escape: false },
             { id: 3, condition: "下次見到黑潮椰蟹騎士時受到80傷害，此次休息整備不能移除異常狀態。", tags: ["休息整備"], escape: true }
         ]
     },
@@ -320,7 +320,7 @@ class GameEngine {
         this.state.dragonRepeatTriggered = false;
 
         // ==============================================
-        // 1. Boss Unique Skills (技能卡1,2,3的王獨立技能)
+        // 1. Boss Unique Skills (選項1,2,3的王獨立技能)
         // ==============================================
         
         // 椰漿軟泥酋長
@@ -389,15 +389,13 @@ class GameEngine {
             
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
-                    if (t.roundCoconuts === minCoco1) applyDamage(t, 60);
-                    if (t.roundCoconuts === maxCoco1) applyDamage(t, 60, "最大值懲罰");
+                    if (t.roundCoconuts === minCoco1) applyDamage(t, 60, "最少椰子懲罰");
                 }
             });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 2) {
-                    if (t.roundCoconuts === maxCoco2) applyDamage(t, 70);
-                    if (t.roundCoconuts === minCoco2) applyDamage(t, 70, "最小值懲罰");
+                    if (t.roundCoconuts === maxCoco2) applyDamage(t, 70, "最多椰子懲罰");
                 }
             });
             if (onStepDone) await onStepDone();
@@ -563,6 +561,12 @@ class GameEngine {
         }
 
         this.state.encounterIndex += 1;
+
+        // 無限回合：當遭遇序列耗盡時，隨機生成新怪物並加入序列
+        if (this.state.encounterIndex >= this.state.monsterSequence.length) {
+            this.state.monsterSequence.push(Math.floor(Math.random() * MONSTERS.length));
+        }
+
         this.state.phase = "ENCOUNTER_BID";
         this.state.timeLeft = 99;
         

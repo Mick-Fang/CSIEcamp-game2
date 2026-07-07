@@ -164,7 +164,7 @@ function render() {
     document.getElementById("team-round-coco").textContent = myTeamData.roundCoconuts;
     document.getElementById("team-total-coco").textContent = myTeamData.totalCoconuts;
 
-    let statusText = "🛡️ 探索中";
+    let statusText = "";
     if (myTeamData.status === "escaped") statusText = "🏕️ 休息整備";
     else if (myTeamData.status === "dead") statusText = "💀 陣亡";
     document.getElementById("team-status").textContent = statusText;
@@ -191,7 +191,7 @@ function render() {
                     const tags = c.tags ? c.tags.map(t => `<span class="tag">${t}</span>`).join('') : '';
                     return `
                     <div class="card-box" data-card-id="${c.id}" onclick="selectCard(${c.id})">
-                        <h4 style="color:var(--ocean-dark); margin-bottom:0.5rem; font-size:1.3rem;">技能卡 ${c.id}</h4>
+                        <h4 style="color:var(--ocean-dark); margin-bottom:0.5rem; font-size:1.3rem;">選項 ${c.id}</h4>
                         <div style="font-size:1.1rem; line-height:1.4; color: var(--coconut-leaf-dark); margin-bottom:0.8rem;">${desc}</div>
                         <div>${tags}</div>
                     </div>
