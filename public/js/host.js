@@ -27,6 +27,14 @@ async function pollServer() {
             if (data.ready_teams !== undefined) {
                 serverReadyCount = data.ready_teams.length;
             }
+            if (data.game_state && Object.keys(data.game_state).length > 0) {
+                // 防呆：若有多個 Host 分頁，強制同步到伺服器最新狀態，避免背景分頁計時器歸零觸發自動結算
+                if (data.game_state.phase !== engine.state.phase || 
+                    data.game_state.encounterIndex !== engine.state.encounterIndex ||
+                    Math.abs(data.game_state.timeLeft - engine.state.timeLeft) > 2) {
+                    engine.state = data.game_state;
+                }
+            }
             render(); // render() 負責重新套用按鈕鎖定
         })
         .catch(e => console.log(e));
