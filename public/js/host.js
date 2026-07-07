@@ -81,14 +81,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function doSubmit() {
+async function doSubmit() {
     if (isSubmitting) return;
     isSubmitting = true;
-    
-    engine.submitCards(serverTeamActions);
-    syncStateToServer(true);
-    serverTeamActions = {};
-    isSubmitting = false;
+    render(); // Show "結算中" immediately
+    try {
+        await engine.submitCards(serverTeamActions, async () => {
+            await syncStateToServer(false);
+            await sleep(1500);
+        });
+        await syncStateToServer(true);
+        serverTeamActions = {};
+    } finally {
+        isSubmitting = false;
+    }
     render();
 }
 
@@ -139,8 +145,13 @@ function render() {
         }
 
     } else if (state.phase === "ENCOUNTER_BID") {
-        renderBidPhase(state);
-        document.getElementById("phase-encounter-bid").style.display = "block";
+        if (isSubmitting) {
+            // During resolution animation, don't show the bid form
+            document.getElementById("phase-encounter-bid").style.display = "none";
+        } else {
+            renderBidPhase(state);
+            document.getElementById("phase-encounter-bid").style.display = "block";
+        }
     } else if (state.phase === "ENCOUNTER_RESULT") {
         document.getElementById("result-list").innerHTML = state.teams
             .filter(t => t.selectedCardId)

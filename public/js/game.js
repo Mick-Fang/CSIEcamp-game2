@@ -259,7 +259,7 @@ class GameEngine {
         return null;
     }
 
-    submitCards(cardSelections) {
+    async submitCards(cardSelections, onStepDone) {
         const monster = this.getCurrentMonster();
         if (!monster) return;
 
@@ -336,35 +336,45 @@ class GameEngine {
         // 椰漿軟泥酋長
         if (monster.name === "椰漿軟泥酋長") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1) applyDamage(t, 20); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2) applyDamage(t, 40); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 3) applyDamage(t, 60); });
         }
         
         // 椰殼小妖頭目
         if (monster.name === "椰殼小妖頭目") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] > 0) applyDamage(t, Math.round(30 / counts[1])); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] > 0) applyDamage(t, Math.round(60 / counts[2])); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] > 0) applyDamage(t, Math.round(90 / counts[3])); });
         }
         
         // 狂野椰棕猛獸
         if (monster.name === "狂野椰棕猛獸") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[3] >= 1) applyDamage(t, 40); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[3] >= 2) applyDamage(t, 60); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] === activeCountBefore) applyDamage(t, 80); });
         }
         
         // 鐵殼椰核食人魔
         if (monster.name === "鐵殼椰核食人魔") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] % 2 !== 0) applyDamage(t, 50); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] % 2 === 0) applyDamage(t, 50); });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] >= 2) applyDamage(t, 70); });
         }
         
         // 遠古珊瑚椰石像
         if (monster.name === "遠古珊瑚椰石像") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1) { t.debuffs.golemCurseDmg = 10; } });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2) { t.debuffs.golemCurseDmg = 30; } });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { 
                 if (t.selectedCardId === 3) {
                     let half = Math.floor(t.roundCoconuts / 2);
@@ -393,12 +403,14 @@ class GameEngine {
                     if (t.roundCoconuts === maxCoco1) applyDamage(t, 60, "最大值懲罰");
                 }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 2) {
                     if (t.roundCoconuts === maxCoco2) applyDamage(t, 70);
                     if (t.roundCoconuts === minCoco2) applyDamage(t, 70, "最小值懲罰");
                 }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 3) { t.debuffs.crabNextEncounterDmg = true; }
             });
@@ -411,9 +423,11 @@ class GameEngine {
                     addCoconuts(t, -2, true); if (counts[1] < 7) this.state.dragonRepeatTriggered = true;
                 }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 2) { addCoconuts(t, -2, true); }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 3) { t.specialEscapeNoHealNoClearNoSave = true; }
             });
@@ -432,6 +446,7 @@ class GameEngine {
                         logs[t.id].push(`移除 ${target.name} 袋中 2 椰子`); }
                 }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedTargetId && t.selectedCardId === 2) {
                     const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
@@ -441,6 +456,7 @@ class GameEngine {
                     }
                 }
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (t.selectedTargetId && t.selectedCardId === 3) {
                     const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
@@ -458,9 +474,11 @@ class GameEngine {
             activeTeams.forEach(t => {
                 if (counts[2] > counts[1] && t.selectedCardId === 1) applyDamage(t, 70);
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (counts[1] > counts[2] && t.selectedCardId === 2) applyDamage(t, 80);
             });
+            if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
                 if (counts[1] > counts[2] && t.selectedCardId === 3) applyDamage(t, 80);
                 if (counts[2] > counts[1] && t.selectedCardId === 3) applyDamage(t, 70);
@@ -474,15 +492,20 @@ class GameEngine {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡1無人選制裁"));
                 this.addLog(`祖靈震怒：卡1無人選擇，所有人承受 90 點傷害！`);
             }
+            if (onStepDone) await onStepDone();
             if (counts[2] === 0) {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡2無人選制裁"));
                 this.addLog(`祖靈震怒：卡2無人選擇，所有人承受 90 點傷害！`);
             }
+            if (onStepDone) await onStepDone();
             if (counts[3] === 0) {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈卡3無人選制裁"));
                 this.addLog(`祖靈震怒：卡3無人選擇，所有人承受 90 點傷害！`);
             }
         }
+
+        // === Boss skill card 3 done, pause before common ===
+        if (onStepDone) await onStepDone();
 
         // ==============================================
         // 2. Common Skills (共同技能)
