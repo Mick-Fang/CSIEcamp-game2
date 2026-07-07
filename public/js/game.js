@@ -564,9 +564,14 @@ class GameEngine {
 
         this.state.encounterIndex += 1;
 
-        // 無限回合：當遭遇序列耗盡時，隨機生成新怪物並加入序列
+        // 無限回合：當遭遇序列耗盡時，生成新的一組隨機打亂的所有怪物並加入序列
         if (this.state.encounterIndex >= this.state.monsterSequence.length) {
-            this.state.monsterSequence.push(Math.floor(Math.random() * MONSTERS.length));
+            let seq = Array.from({ length: MONSTERS.length }, (_, i) => i);
+            for (let i = seq.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [seq[i], seq[j]] = [seq[j], seq[i]];
+            }
+            this.state.monsterSequence.push(...seq);
         }
 
         this.state.phase = "ENCOUNTER_BID";
