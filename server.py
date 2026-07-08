@@ -4,7 +4,7 @@ import json
 import os
 import socket
 
-PORT = 8000
+PORT = 8765
 
 # Server State
 game_state = {}
