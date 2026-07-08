@@ -88,8 +88,18 @@ function render() {
         const prevHP = previousHPs[t.id];
         const hpDecreased = (prevHP !== undefined && t.hp < prevHP);
 
+        let cornerIcon = "";
+        if (state.phase === "ENCOUNTER_RESULT" && t.roundResult) {
+            if (t.roundResult === "dead") {
+                cornerIcon = `<div style="position: absolute; top: -15px; right: -15px; font-size: 3.5rem; filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8)); transform: rotate(15deg); z-index: 10;">💀</div>`;
+            } else if (t.roundResult === "escaped") {
+                cornerIcon = `<div style="position: absolute; top: -15px; right: -15px; font-size: 3.5rem; filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8)); transform: rotate(-10deg); z-index: 10;">🏕️</div>`;
+            }
+        }
+
         return `
-            <div class="team-box ${t.status}" id="team-box-${t.id}">
+            <div class="team-box ${t.status}" id="team-box-${t.id}" style="position: relative;">
+                ${cornerIcon}
                 <h3 style="margin:0 0 0.25rem 0; color: #fff; font-size: 1.2rem;">${t.name}</h3>
                 ${statusText ? `<div style="font-weight:bold; color: ${statusColor}; margin-bottom: 0.25rem; font-size: 1.1rem;">${statusText}</div>` : ""}
                 ${cardIndicator}

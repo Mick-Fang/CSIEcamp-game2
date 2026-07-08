@@ -511,6 +511,7 @@ class GameEngine {
         // ==============================================
         activeTeams.forEach(t => {
             if (t.hp <= 0) {
+                t.roundResult = "dead";
                 t.roundCoconuts = 0;
                 t.hp = 100;
                 // t.status = "active";
@@ -520,6 +521,7 @@ class GameEngine {
                 t.lastActionLog = `${logs[t.id].join(', ')} -> 陣亡！椰子掉落，血量重置。`;
                 this.addLog(`【${t.name}】陣亡了！目前椰子歸零，重新加入下一階段。`);
             } else if (escapes[t.id]) {
+                t.roundResult = "escaped";
                 if (t.specialEscapeNoHealNoClearNoSave) {
                     t.lastActionLog = `${logs[t.id].join(', ')} -> (巨翼龍特殊逃跑) 不回血、不清異常、不存椰子。`;
                     this.addLog(`【${t.name}】逃跑了，但因巨翼龍效果無法恢復！`);
@@ -537,6 +539,7 @@ class GameEngine {
                     this.addLog(`【${t.name}】休息整備，帶回 ${gained} 顆椰子，重新加入下一階段。`);
                 }
             } else {
+                t.roundResult = "active";
                 t.lastActionLog = logs[t.id].length > 0 ? logs[t.id].join(', ') : "平安無事";
             }
             
@@ -581,6 +584,7 @@ class GameEngine {
             t.selectedCardId = null;
             t.selectedTargetId = null;
             t.lastActionLog = "";
+            t.roundResult = null;
             
             // 處理大祭司死亡宣告
             if (t.debuffs.deathDoomCount > 0) {
