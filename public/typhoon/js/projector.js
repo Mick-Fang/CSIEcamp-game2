@@ -97,6 +97,20 @@ function render() {
             }
         }
 
+        let roundCocoStr = `${t.roundCoconuts}`;
+        if (state.phase === "ENCOUNTER_RESULT" && t.roundCoconutsDiff) {
+            let sign = t.roundCoconutsDiff > 0 ? "+" : "";
+            let color = t.roundCoconutsDiff > 0 ? "#fde047" : "#fca5a5";
+            roundCocoStr += ` <span style="font-size:1.1rem; color:${color};">(${sign}${t.roundCoconutsDiff})</span>`;
+        }
+
+        let totalCocoStr = `${t.totalCoconuts}`;
+        if (state.phase === "ENCOUNTER_RESULT" && t.totalCoconutsDiff) {
+            let sign = t.totalCoconutsDiff > 0 ? "+" : "";
+            let color = t.totalCoconutsDiff > 0 ? "#a3e635" : "#fca5a5";
+            totalCocoStr += ` <span style="font-size:0.9rem; color:${color};">(${sign}${t.totalCoconutsDiff})</span>`;
+        }
+
         return `
             <div class="team-box ${t.status}" id="team-box-${t.id}" style="position: relative;">
                 ${cornerIcon}
@@ -105,8 +119,8 @@ function render() {
                 ${cardIndicator}
                 ${debuffHtml}
                 <div style="font-size: 1.1rem; margin-bottom: 0.2rem;">💖 HP: <span style="font-size:1.5rem; font-weight:bold;">${t.hp}</span></div>
-                <div style="font-size: 1.1rem;">🎒 袋中: <span style="font-size:1.5rem; color:#f59e0b; font-weight:bold;">${t.roundCoconuts}</span></div>
-                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏡 家中椰子: <span style="color:#fff;">${t.totalCoconuts}</span></div>
+                <div style="font-size: 1.1rem;">🎒 袋中: <span style="font-size:1.5rem; color:#f59e0b; font-weight:bold;">${roundCocoStr}</span></div>
+                <div style="margin-top: 0.5rem; font-size: 1rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.5rem;">🏡 家中椰子: <span style="color:#fff;">${totalCocoStr}</span></div>
             </div>
         `;
     }).join("");

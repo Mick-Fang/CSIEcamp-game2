@@ -248,14 +248,19 @@ class GameEngine {
         }
         return null;
     }
-
     async submitCards(cardSelections, onStepDone) {
         const monster = this.getCurrentMonster();
         if (!monster) return;
 
-        let coconuts = {};
-        let escapes = {};
         let logs = {};
+        let escapes = {};
+        const prevRoundCoconuts = {};
+        const prevTotalCoconuts = {};
+        this.state.teams.forEach(t => {
+            prevRoundCoconuts[t.id] = t.roundCoconuts;
+            prevTotalCoconuts[t.id] = t.totalCoconuts;
+            logs[t.id] = [];
+        });
 
         let activeCountBefore = 0;
         const activeTeams = this.state.teams.filter(t => t.status === "active");
@@ -544,6 +549,8 @@ class GameEngine {
             }
             
             t.specialEscapeNoHealNoClearNoSave = false; // reset
+            t.roundCoconutsDiff = t.roundCoconuts - prevRoundCoconuts[t.id];
+            t.totalCoconutsDiff = t.totalCoconuts - prevTotalCoconuts[t.id];
         });
 
         this.state.phase = "ENCOUNTER_RESULT";
@@ -585,6 +592,8 @@ class GameEngine {
             t.selectedTargetId = null;
             t.lastActionLog = "";
             t.roundResult = null;
+            t.roundCoconutsDiff = 0;
+            t.totalCoconutsDiff = 0;
             
             // 處理大祭司死亡宣告
             if (t.debuffs.deathDoomCount > 0) {
