@@ -86,9 +86,9 @@ const MONSTERS = [
         img: "assets/abyss_sea_god.png",
         desc: "沉入深海吸收怨念的巨大腐爛椰子。",
         cards: [
-            { id: 1, condition: "如果選這個選項的小隊比選2的多，選擇選項2或3的小隊受到80點傷害。", tags: ["獲得一顆椰子"], escape: false },
-            { id: 2, condition: "如果選這個選項的小隊比選1的多，選擇選項1或3的小隊受到70點傷害。", tags: ["獲得兩顆椰子"], escape: false },
-            { id: 3, condition: "你的袋子中+6椰子。", tags: ["休息整備"], escape: true }
+            { id: 1, condition: "如果選這個選項的小隊比選2的多，選擇選項2或3的小隊受到100點傷害。", tags: ["獲得一顆椰子"], escape: false },
+            { id: 2, condition: "如果選這個選項的小隊比選1的多，選擇選項1或3的小隊受到50點傷害。", tags: ["獲得兩顆椰子"], escape: false },
+            { id: 3, condition: "你的袋子中+3椰子。", tags: ["休息整備"], escape: true }
         ]
     },
     {
@@ -462,17 +462,17 @@ class GameEngine {
         // 海溝腐椰海神
         if (monster.name === "海溝腐椰海神") {
             activeTeams.forEach(t => {
-                if (counts[2] > counts[1] && t.selectedCardId === 1) applyDamage(t, 70);
+                if (counts[2] > counts[1] && t.selectedCardId === 1) applyDamage(t, 50);
             });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
-                if (counts[1] > counts[2] && t.selectedCardId === 2) applyDamage(t, 80);
+                if (counts[1] > counts[2] && t.selectedCardId === 2) applyDamage(t, 100);
             });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => {
-                if (counts[1] > counts[2] && t.selectedCardId === 3) applyDamage(t, 80);
-                if (counts[2] > counts[1] && t.selectedCardId === 3) applyDamage(t, 70);
-                if (t.selectedCardId === 3) { addCoconuts(t, 6, true); }
+                if (counts[1] > counts[2] && t.selectedCardId === 3) applyDamage(t, 100);
+                if (counts[2] > counts[1] && t.selectedCardId === 3) applyDamage(t, 50);
+                if (t.selectedCardId === 3) { addCoconuts(t, 3, true); }
             });
         }
         
