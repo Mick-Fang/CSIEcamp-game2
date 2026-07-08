@@ -252,8 +252,9 @@ class GameEngine {
         const monster = this.getCurrentMonster();
         if (!monster) return;
 
-        let logs = {};
+        let coconuts = {};
         let escapes = {};
+        let logs = {};
         const prevRoundCoconuts = {};
         const prevTotalCoconuts = {};
         this.state.teams.forEach(t => {
