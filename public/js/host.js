@@ -6,6 +6,7 @@ const engine = new GameEngine();
 let serverTeamActions = {};
 let serverReadyCount = 0;
 let isSubmitting = false; // 防止雙重結算
+let lastSubmitTime = 0;
 
 async function syncStateToServer(clearActions = false) {
     let body = {game_state: engine.state};
@@ -18,9 +19,12 @@ async function syncStateToServer(clearActions = false) {
 }
 
 async function pollServer() {
+    if (isSubmitting) return;
+    const fetchStartTime = Date.now();
     await fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
+            if (isSubmitting || fetchStartTime < lastSubmitTime) return;
             if (data.team_actions) {
                 serverTeamActions = data.team_actions;
             }
@@ -120,6 +124,7 @@ async function doSubmit() {
         serverTeamActions = {};
     } finally {
         isSubmitting = false;
+        lastSubmitTime = Date.now();
     }
     render();
 }
