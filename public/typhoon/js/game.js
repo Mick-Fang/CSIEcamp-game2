@@ -140,12 +140,12 @@ class GameEngine {
     }
 
     saveState() {
-        localStorage.setItem("coconut_game2_state", JSON.stringify(this.state));
+        localStorage.setItem("coconut_game2_typhoon_state", JSON.stringify(this.state));
         window.dispatchEvent(new Event("state_updated"));
     }
 
     loadState() {
-        const stored = localStorage.getItem("coconut_game2_state");
+        const stored = localStorage.getItem("coconut_game2_typhoon_state");
         if (stored) {
             try { this.state = JSON.parse(stored); } catch (e) {
                 console.error("狀態讀取失敗", e);
