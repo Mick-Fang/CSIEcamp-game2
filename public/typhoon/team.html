@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥥 椰子怪討伐戰 — 小隊介面</title>
+    <link rel="stylesheet" href="/csiecamp_game2/typhoon/css/style.css?v=1783411227">
+    <style>
+        .container { max-width: 600px; margin: 0 auto; }
+        .card-select { padding: 0.5rem; border-radius: 4px; font-size: 1.2rem; width: 100%; margin-top: 0.5rem; }
+        .monster-box { text-align: center; margin-bottom: 1rem; }
+        .monster-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; border: 3px solid var(--sunset-orange); margin: 0 auto; display: block; }
+        .team-stats { display: flex; justify-content: space-between; font-size: 1.2rem; margin-bottom: 1rem; font-weight: bold; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
+        .timer { font-size: 3rem; color: #ef4444; text-align: center; font-weight: bold; margin: 1rem 0; }
+        .card-box { background: var(--card-bg-light); border-left: 4px solid var(--ocean-dark); box-shadow: var(--shadow-soft); padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .card-box:hover { background: var(--sand-medium); }
+        .card-box.selected { border-left: 4px solid var(--sunset-orange); background: rgba(234, 88, 12, 0.1); }
+        .tag { background: #fde047; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; margin-right: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="login-view" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--sand-light); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+        <h2 style="color: var(--ocean-dark); margin-bottom: 20px; font-size: 2.5rem; font-weight: bold; font-family: var(--font-heading);">🌴 小隊登入</h2>
+        <div style="background: white; padding: 25px; border-radius: 16px; box-shadow: var(--shadow-heavy); text-align: center; width: 100%; max-width: 320px; border: 2px solid var(--sand-medium);">
+            <p style="margin-bottom: 15px; color: var(--coconut-brown); font-size: 1.3rem; font-weight: bold;">請輸入第 <span id="display-team-id"></span> 小隊密碼</p>
+            <input type="password" id="team-password" class="form-input" placeholder="預設為小隊編號" style="margin-bottom: 20px; text-align: center; width: 100%; font-size: 1.2rem;">
+            <button id="login-btn" class="btn btn-primary" style="width: 100%; font-size: 1.3rem; padding: 10px;">登入</button>
+            <p id="login-error" style="color: var(--danger-red); margin-top: 15px; display: none; font-weight: bold; font-size: 1.1rem;">❌ 密碼錯誤！</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 1rem;">
+            <h1 id="team-name">連線中...</h1>
+            <div id="team-status" style="font-size: 1.2rem; color: var(--coconut-brown);">等待遊戲開始</div>
+        </header>
+
+        <div id="game-view" style="display: none;">
+            <div class="team-stats">
+                <div style="color: #ff7675;">💖 <span id="team-hp">100</span></div>
+                <div style="color: #f59e0b;">🎒 <span id="team-round-coco">0</span></div>
+                <div style="color: #81ecec;">🏦 <span id="team-total-coco">0</span></div>
+            </div>
+
+            <div id="timer" class="timer">99</div>
+
+            <div class="monster-box glass-card">
+                <img id="monster-img" class="monster-img" src="" alt="Monster">
+                <h2 id="monster-name" style="margin: 0.5rem 0; color: var(--coconut-brown);">-</h2>
+                <p id="monster-desc" style="color: var(--coconut-leaf-dark);">-</p>
+            </div>
+
+            <div id="cards-container">
+                <!-- Cards will be rendered here -->
+            </div>
+
+            <div id="target-selection" style="display: none; margin-top: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                <h3 style="margin-bottom: 0.5rem;">🎯 選擇一個選項</h3>
+                <select id="target-select" class="card-select">
+                    <!-- Options -->
+                </select>
+            </div>
+
+            <button id="submit-btn" class="btn btn-primary" style="width: 100%; font-size: 1.5rem; margin-top: 1rem; display: none;">確定出牌</button>
+            <div id="action-status" style="text-align: center; margin-top: 1rem; font-size: 1.2rem; color: #10b981; display: none;">✅ 已送出選擇，等待結算...</div>
+        </div>
+        
+        <div id="wait-view" style="display: none; text-align: center; margin-top: 3rem;">
+            <div id="wait-text" style="font-size: 1.5rem; color: var(--coconut-brown); margin-bottom: 2rem;">
+                請稍候，遊戲準備中或正在結算...
+            </div>
+            <button id="ready-btn" class="btn btn-success" style="font-size: 1.5rem; padding: 1rem 3rem; box-shadow: var(--shadow-heavy);">我準備好了！</button>
+        </div>
+    </div>
+
+    <script src="/csiecamp_game2/typhoon/js/game.js?v=1783411227"></script>
+    <script src="/csiecamp_game2/typhoon/js/team.js?v=1783411227"></script>
+</body>
+</html>
