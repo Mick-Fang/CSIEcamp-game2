@@ -56,6 +56,24 @@ setInterval(() => {
 }, 1000);
 
 document.addEventListener("DOMContentLoaded", () => {
+    const loginView = document.getElementById("host-login-view");
+    const loginBtn = document.getElementById("host-login-btn");
+    const pwdInput = document.getElementById("host-password");
+    const loginError = document.getElementById("host-login-error");
+
+    if (loginBtn) {
+        loginBtn.addEventListener("click", () => {
+            if (pwdInput.value === "mick") {
+                loginView.style.display = "none";
+            } else {
+                loginError.style.display = "block";
+            }
+        });
+        pwdInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") loginBtn.click();
+        });
+    }
+
     render();
     window.addEventListener("state_updated", () => { render(); syncStateToServer(); });
     syncStateToServer();

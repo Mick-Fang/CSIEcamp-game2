@@ -11,6 +11,16 @@
     </style>
 </head>
 <body>
+    <div id="host-login-view" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--sand-light); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+        <h2 style="color: var(--ocean-dark); margin-bottom: 20px; font-size: 2.5rem; font-weight: bold; font-family: var(--font-heading);">🥥 主持人登入</h2>
+        <div style="background: white; padding: 25px; border-radius: 16px; box-shadow: var(--shadow-heavy); text-align: center; width: 100%; max-width: 320px; border: 2px solid var(--sand-medium);">
+            <p style="margin-bottom: 15px; color: var(--coconut-brown); font-size: 1.3rem; font-weight: bold;">請輸入主持人密碼</p>
+            <input type="password" id="host-password" class="form-input" placeholder="請輸入密碼" style="margin-bottom: 20px; text-align: center; width: 100%; font-size: 1.2rem;">
+            <button id="host-login-btn" class="btn btn-primary" style="width: 100%; font-size: 1.3rem; padding: 10px;">登入</button>
+            <p id="host-login-error" style="color: var(--danger-red); margin-top: 15px; display: none; font-weight: bold; font-size: 1.1rem;">❌ 密碼錯誤！</p>
+        </div>
+    </div>
+
     <div class="container">
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div>
