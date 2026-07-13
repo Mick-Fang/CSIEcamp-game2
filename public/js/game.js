@@ -150,15 +150,39 @@ class GameEngine {
             try { this.state = JSON.parse(stored); } catch (e) {
                 console.error("狀態讀取失敗", e);
                 this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                this.generateTokens();
             }
         } else {
             this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            this.generateTokens();
+            this.saveState();
+        }
+        // Ensure tokens exist for old saves
+        if (!this.state.teamTokens) {
+            this.generateTokens();
             this.saveState();
         }
     }
 
+    generateTokens() {
+        // 固定配置的 10 組小隊 Token
+        this.state.teamTokens = {
+            0: "XJ7K",
+            1: "P9M2",
+            2: "C4FD",
+            3: "8VNA",
+            4: "TQ5E",
+            5: "H3LW",
+            6: "ZRY9",
+            7: "6BQG",
+            8: "U2PX",
+            9: "E5SJ"
+        };
+    }
+
     resetGame() {
         this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        this.generateTokens();
         this.saveState();
     }
 

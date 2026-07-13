@@ -16,11 +16,14 @@ let lastEncounterIndex = -1;
 let localTimeLeft = 99;
 let lastKnownPhase = null;
 
+let isStateLoaded = false;
+
 function pollServer() {
     fetch('/csiecamp_game2/api/state')
         .then(res => res.json())
         .then(data => {
             if (data.game_state && Object.keys(data.game_state).length > 0) {
+                isStateLoaded = true;
                 const newState = data.game_state;
                 engine.state = newState;
                 
@@ -64,10 +67,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("display-team-id").textContent = teamId;
     
     document.getElementById("login-btn").addEventListener("click", () => {
-        const pwd = document.getElementById("team-password").value;
-        if (pwd === String(teamId)) {
+        if (!isStateLoaded) {
+            document.getElementById("login-error").textContent = "正在連線伺服器取得密碼，請稍候再試...";
+            document.getElementById("login-error").style.display = "block";
+            return;
+        }
+
+        const pwd = document.getElementById("team-password").value.trim().toUpperCase();
+        const expectedPwd = engine.state.teamTokens ? engine.state.teamTokens[teamId] : String(teamId);
+        
+        if (pwd === expectedPwd) {
             document.getElementById("login-view").style.display = "none";
         } else {
+            document.getElementById("login-error").textContent = "❌ 密碼錯誤！";
             document.getElementById("login-error").style.display = "block";
         }
     });
