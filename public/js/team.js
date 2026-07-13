@@ -145,7 +145,7 @@ window.selectCard = function(cardId) {
     const targetSelection = document.getElementById("target-selection");
     if (!currentMonster) return;
     
-    if (currentMonster.name === "枯朽椰骸大祭司") {
+    if (currentMonster.name === "霸王椰") {
         targetSelection.style.display = "block";
         const targetSelect = document.getElementById("target-select");
         

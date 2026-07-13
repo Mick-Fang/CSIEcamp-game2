@@ -2,8 +2,8 @@
 
 const MONSTERS = [
     {
-        name: "椰漿軟泥酋長",
-        img: "assets/slime_chief.png",
+        name: "妙蛙椰子",
+        img: "assets/1.jpg",
         desc: "由濃稠椰奶聚合而成的果凍狀怪物。",
         cards: [
             { id: 1, condition: "受到20點傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -12,8 +12,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "椰殼小妖頭目",
-        img: "assets/goblin_chief.png",
+        name: "妙蛙椰草",
+        img: "assets/3.jpg",
         desc: "喜歡成群結隊在沙灘上惡作劇。",
         cards: [
             { id: 1, condition: "選擇這個選項的小隊分攤30點傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -22,8 +22,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "狂野椰棕猛獸",
-        img: "assets/beast_king.png",
+        name: "妙蛙椰樹",
+        img: "assets/2.jpg",
         desc: "披著厚重椰棕的叢林巨獸。",
         cards: [
             { id: 1, condition: "如果這回合有至少1個小隊選擇逃跑，受到40點傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -32,8 +32,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "鐵殼椰核食人魔",
-        img: "assets/troll_ogre.png",
+        name: "椰蛋",
+        img: "assets/9.jpg",
         desc: "以堅硬無比的椰核為核心變異而成。",
         cards: [
             { id: 1, condition: "如果這個選項有奇數個小隊選，受到50傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -42,8 +42,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "遠古珊瑚椰石像",
-        img: "assets/coral_golem.png",
+        name: "小椰怪",
+        img: "assets/5.jpg",
         desc: "長滿青苔的巨大摩艾石像。",
         cards: [
             { id: 1, condition: "直到死掉或休息整備前，每次袋子內的椰子變多，就受到10傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -52,28 +52,28 @@ const MONSTERS = [
         ]
     },
     {
-        name: "黑潮椰蟹騎士",
-        img: "assets/crab_rider.png",
+        name: "三合一椰怪",
+        img: "assets/8.jpg",
         desc: "騎乘深海椰子蟹的怨靈。",
         cards: [
             { id: 1, condition: "選擇此選項的小隊中，袋子內椰子最少者受到60傷害。同時最少者全部皆會受傷。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "選擇此選項的小隊中，袋子內椰子最多者受到70傷害。同時最多者全部皆會受傷。", tags: ["獲得兩顆椰子"], escape: false },
-            { id: 3, condition: "下次見到黑潮椰蟹騎士時受到80傷害，此次休息整備不能移除異常狀態。", tags: ["休息整備"], escape: true }
+            { id: 3, condition: "下次見到三合一椰怪時受到80傷害，此次休息整備不能移除異常狀態。", tags: ["休息整備"], escape: true }
         ]
     },
     {
-        name: "風暴椰鱗巨翼龍",
-        img: "assets/storm_dragon.png",
+        name: "阿羅拉椰蛋樹",
+        img: "assets/7-1.jpg",
         desc: "拍打翅膀時會捲起熱帶風暴。",
         cards: [
-            { id: 1, condition: "失去2個椰子，如果選這個選項的小隊不足7個，再打一次風暴椰鱗巨翼龍。", tags: ["獲得一顆椰子"], escape: false },
+            { id: 1, condition: "失去2個椰子，如果選這個選項的小隊不足7個，再打一次阿羅拉椰蛋樹。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "失去2個椰子。", tags: ["獲得兩顆椰子"], escape: false },
             { id: 3, condition: "此次休息整備不能回血、不能移除異常狀態、也不能儲存椰子。", tags: ["休息整備"], escape: true }
         ]
     },
     {
-        name: "枯朽椰骸大祭司",
-        img: "assets/skeleton_priest.png",
+        name: "霸王椰",
+        img: "assets/6.jpg",
         desc: "枯死椰子樹與白骨結合的祭司。",
         cards: [
             { id: 1, condition: "每個選擇此選項的小隊各自指定另外一隊，你移除他袋內2顆椰子。", tags: ["獲得一顆椰子"], escape: false, requireTarget: true },
@@ -82,8 +82,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "海溝腐椰海神",
-        img: "assets/abyss_sea_god.png",
+        name: "走路椰",
+        img: "assets/4.jpg",
         desc: "沉入深海吸收怨念的巨大腐爛椰子。",
         cards: [
             { id: 1, condition: "如果選這個選項的小隊比選2的多，選擇選項2或3的小隊受到100點傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -92,8 +92,8 @@ const MONSTERS = [
         ]
     },
     {
-        name: "終焉滅世巨椰祖靈",
-        img: "assets/final_boss_ancestor.png",
+        name: "椰神月",
+        img: "assets/10.jpg",
         desc: "一切椰子的起源，神話級巨型椰子。",
         cards: [
             { id: 1, condition: "如果沒人選這個選項，所有人受到90傷害。", tags: ["獲得一顆椰子"], escape: false },
@@ -212,9 +212,9 @@ class GameEngine {
         let seq = [];
         if (!gameStartedBefore) {
             const firstNames = [
-                "椰漿軟泥酋長", "椰殼小妖頭目", "狂野椰棕猛獸", "鐵殼椰核食人魔", 
-                "遠古珊瑚椰石像", "黑潮椰蟹騎士", "風暴椰鱗巨翼龍", 
-                "枯朽椰骸大祭司", "海溝腐椰海神", "終焉滅世巨椰祖靈"
+                "妙蛙椰子", "妙蛙椰草", "妙蛙椰樹", "椰蛋", 
+                "小椰怪", "三合一椰怪", "阿羅拉椰蛋樹", 
+                "霸王椰", "走路椰", "椰神月"
             ];
             seq = firstNames.map(n => MONSTERS.findIndex(m => m.name === n)).filter(idx => idx !== -1);
             gameStartedBefore = true;
@@ -229,6 +229,7 @@ class GameEngine {
         this.state.monsterSequence = seq;
         this.state.gameStartedBefore = gameStartedBefore;
         this.state.extraEncounters = 0;
+        this.state.isDragonRepeatEncounter = false;
         this.state.roundNum = 1;
         this.state.encounterIndex = 0;
         this.state.phase = "ENCOUNTER_BID";
@@ -242,7 +243,11 @@ class GameEngine {
     getCurrentMonster() {
         if (this.state.monsterSequence.length === 0) return null;
         const idx = this.state.monsterSequence[this.state.encounterIndex];
-        return MONSTERS[idx];
+        const baseMonster = MONSTERS[idx];
+        if (baseMonster && baseMonster.name === "阿羅拉椰蛋樹" && this.state.isDragonRepeatEncounter) {
+            return { ...baseMonster, img: "assets/7-2.jpg" };
+        }
+        return baseMonster;
     }
 
     getMonsterCards(monster) {
@@ -327,7 +332,7 @@ class GameEngine {
             t.roundCoconuts += amount;
             if (t.roundCoconuts < 0) t.roundCoconuts = 0;
             logs[t.id].push(amount > 0 ? `+${amount} 椰子` : `${amount} 椰子`);
-            // 遠古珊瑚椰石像詛咒: 獲得椰子時受傷
+            // 小椰怪詛咒: 獲得椰子時受傷
             if (amount > 0 && t.debuffs.golemCurseDmg > 0 && !isSpecial) {
                 applyDamage(t, t.debuffs.golemCurseDmg, "珊瑚石像詛咒發作");
             }
@@ -338,7 +343,7 @@ class GameEngine {
 
         // 開場狀態結算
         activeTeams.forEach(t => {
-            if (monster.name === "黑潮椰蟹騎士" && t.debuffs.crabNextEncounterDmg) {
+            if (monster.name === "三合一椰怪" && t.debuffs.crabNextEncounterDmg) {
                 applyDamage(t, 80, "椰蟹騎士開場怨念發作");
                 t.debuffs.crabNextEncounterDmg = false;
             }
@@ -355,8 +360,8 @@ class GameEngine {
         // 1. Boss Unique Skills (選項1,2,3的王獨立技能)
         // ==============================================
         
-        // 椰漿軟泥酋長
-        if (monster.name === "椰漿軟泥酋長") {
+        // 妙蛙椰子
+        if (monster.name === "妙蛙椰子") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1) applyDamage(t, 20); });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2) applyDamage(t, 40); });
@@ -364,8 +369,8 @@ class GameEngine {
             activeTeams.forEach(t => { if (t.selectedCardId === 3) applyDamage(t, 60); });
         }
         
-        // 椰殼小妖頭目
-        if (monster.name === "椰殼小妖頭目") {
+        // 妙蛙椰草
+        if (monster.name === "妙蛙椰草") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] > 0) applyDamage(t, Math.round(30 / counts[1])); });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] > 0) applyDamage(t, Math.round(60 / counts[2])); });
@@ -373,8 +378,8 @@ class GameEngine {
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] > 0) applyDamage(t, Math.round(90 / counts[3])); });
         }
         
-        // 狂野椰棕猛獸
-        if (monster.name === "狂野椰棕猛獸") {
+        // 妙蛙椰樹
+        if (monster.name === "妙蛙椰樹") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[3] >= 1) applyDamage(t, 40); });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[3] >= 2) applyDamage(t, 60); });
@@ -382,8 +387,8 @@ class GameEngine {
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] === activeCountBefore) applyDamage(t, 80); });
         }
         
-        // 鐵殼椰核食人魔
-        if (monster.name === "鐵殼椰核食人魔") {
+        // 椰蛋
+        if (monster.name === "椰蛋") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1 && counts[1] % 2 !== 0) applyDamage(t, 50); });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2 && counts[2] % 2 === 0) applyDamage(t, 50); });
@@ -391,8 +396,8 @@ class GameEngine {
             activeTeams.forEach(t => { if (t.selectedCardId === 3 && counts[3] >= 2) applyDamage(t, 70); });
         }
         
-        // 遠古珊瑚椰石像
-        if (monster.name === "遠古珊瑚椰石像") {
+        // 小椰怪
+        if (monster.name === "小椰怪") {
             activeTeams.forEach(t => { if (t.selectedCardId === 1) { t.debuffs.golemCurseDmg = 10; } });
             if (onStepDone) await onStepDone();
             activeTeams.forEach(t => { if (t.selectedCardId === 2) { t.debuffs.golemCurseDmg = 30; } });
@@ -405,8 +410,8 @@ class GameEngine {
             });
         }
         
-        // 黑潮椰蟹騎士
-        if (monster.name === "黑潮椰蟹騎士") {
+        // 三合一椰怪
+        if (monster.name === "三合一椰怪") {
             let minCoco1 = 99999, maxCoco1 = -1, minCoco2 = 99999, maxCoco2 = -1;
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
@@ -436,8 +441,8 @@ class GameEngine {
             });
         }
         
-        // 風暴椰鱗巨翼龍
-        if (monster.name === "風暴椰鱗巨翼龍") {
+        // 阿羅拉椰蛋樹
+        if (monster.name === "阿羅拉椰蛋樹") {
             if (counts[1] < 7) this.state.dragonRepeatTriggered = true;
             activeTeams.forEach(t => {
                 if (t.selectedCardId === 1) {
@@ -454,8 +459,8 @@ class GameEngine {
             });
         }
         
-        // 枯朽椰骸大祭司
-        if (monster.name === "枯朽椰骸大祭司") {
+        // 霸王椰
+        if (monster.name === "霸王椰") {
             activeTeams.forEach(t => {
                 if (t.selectedTargetId && t.selectedCardId === 1) {
                     const target = this.state.teams.find(tm => tm.id === t.selectedTargetId);
@@ -490,8 +495,8 @@ class GameEngine {
             });
         }
         
-        // 海溝腐椰海神
-        if (monster.name === "海溝腐椰海神") {
+        // 走路椰
+        if (monster.name === "走路椰") {
             activeTeams.forEach(t => {
                 if (counts[2] > counts[1] && t.selectedCardId === 1) applyDamage(t, 50);
             });
@@ -507,8 +512,8 @@ class GameEngine {
             });
         }
         
-        // 終焉滅世巨椰祖靈
-        if (monster.name === "終焉滅世巨椰祖靈") {
+        // 椰神月
+        if (monster.name === "椰神月") {
             if (counts[1] === 0) {
                 activeTeams.forEach(t => applyDamage(t, 90, "祖靈選項1無人選制裁"));
                 this.addLog(`祖靈震怒：選項1無人選擇，所有人承受 90 點傷害！`);
@@ -595,7 +600,10 @@ class GameEngine {
             this.state.monsterSequence.splice(this.state.encounterIndex + 1, 0, currentMonsterIdx);
             this.state.dragonRepeatTriggered = false;
             this.state.extraEncounters = (this.state.extraEncounters || 0) + 1;
-            this.addLog("巨翼龍再次襲來！");
+            this.state.isDragonRepeatEncounter = true;
+            this.addLog("阿羅拉椰蛋樹再次襲來！");
+        } else {
+            this.state.isDragonRepeatEncounter = false;
         }
 
         this.state.encounterIndex += 1;
@@ -645,6 +653,7 @@ class GameEngine {
         this.state.phase = "ENCOUNTER_BID";
         this.state.timeLeft = 99;
         this.state.extraEncounters = 0;
+        this.state.isDragonRepeatEncounter = false;
         
         // 生成新的原始序列
         let seq = Array.from({ length: MONSTERS.length }, (_, i) => i);

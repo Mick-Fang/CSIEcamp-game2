@@ -242,13 +242,13 @@ window.toggleTarget = function(selectEl, monsterName) {
     const targetSelect = selectEl.parentElement.querySelector(".target-select");
     
     // 大祭司選項 4 或 海神選項 3 或 寶箱 2, 3 需要目標
-    if ((monsterName === "枯朽椰骸大祭司" && val == "3") || 
+    if ((monsterName === "霸王椰" && val == "3") || 
                 (monsterName === "椰子寶箱" && val == "2")) {
         targetSelect.style.display = "block";
         targetSelect.required = true;
         
         // 大祭司復活：只能選目前陣亡的隊伍 (非 active)
-        if (monsterName === "枯朽椰骸大祭司" && val == "3") {
+        if (monsterName === "霸王椰" && val == "3") {
             Array.from(targetSelect.options).forEach(opt => {
                 if (opt.value === "") return;
                 if (opt.textContent.includes("(active)")) {
