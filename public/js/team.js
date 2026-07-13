@@ -270,9 +270,9 @@ function renderRadarChart(canvasId, stats) {
             maintainAspectRatio: false,
             scales: {
                 r: {
-                    angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
-                    grid: { color: 'rgba(255, 255, 255, 0.2)' },
-                    pointLabels: { color: '#f8fafc', font: { size: 10 } },
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    pointLabels: { color: '#333', font: { size: 11, weight: 'bold' } },
                     ticks: {
                         display: false,
                         min: 0,
@@ -288,8 +288,12 @@ function renderRadarChart(canvasId, stats) {
     };
 
     if (radarChart) {
-        radarChart.data = data;
-        radarChart.update();
+        const oldData = radarChart.data.datasets[0].data.join(',');
+        const newData = data.datasets[0].data.join(',');
+        if (oldData !== newData) {
+            radarChart.data = data;
+            radarChart.update();
+        }
     } else {
         radarChart = new Chart(ctx, config);
     }

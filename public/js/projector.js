@@ -261,8 +261,12 @@ function renderRadarChart(canvasId, stats) {
     };
 
     if (radarChart) {
-        radarChart.data = data;
-        radarChart.update();
+        const oldData = radarChart.data.datasets[0].data.join(',');
+        const newData = data.datasets[0].data.join(',');
+        if (oldData !== newData) {
+            radarChart.data = data;
+            radarChart.update();
+        }
     } else {
         radarChart = new Chart(ctx, config);
     }
