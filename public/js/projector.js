@@ -73,8 +73,8 @@ function render() {
         }
 
         let debuffList = [];
-        if (t.debuffs.golemCurseDmg > 0) debuffList.push(`🗿獲椰受傷+${t.debuffs.golemCurseDmg}`);
-        if (t.debuffs.crabNextEncounterDmg) debuffList.push("🦀遇蟹受傷+80");
+        if (t.debuffs.golemCurseDmg > 0) debuffList.push(`獲椰受傷+${t.debuffs.golemCurseDmg}`);
+        if (t.debuffs.crabNextEncounterDmg) debuffList.push("遇三合一受傷+80");
         if (t.debuffs.deathDoomCount > 0) debuffList.push(`💀死亡宣告:剩${t.debuffs.deathDoomCount}遭遇`);
 
         let debuffHtml = "";
