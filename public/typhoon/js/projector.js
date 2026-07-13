@@ -150,6 +150,7 @@ function render() {
             document.getElementById("proj-monster-img").src = m.img;
             document.getElementById("proj-monster-name").textContent = m.name;
             document.getElementById("proj-monster-desc").textContent = m.desc;
+            renderRadarChart("proj-monster-radar-chart", m.stats);
             
             document.getElementById("proj-cards-container").innerHTML = engine.getMonsterCards(m).map(c => {
                 const desc = c.condition || c.desc;
@@ -209,3 +210,60 @@ style.innerHTML = `
 }
 `;
 document.head.appendChild(style);
+
+// ==========================================
+// Radar Chart Rendering Logic
+// ==========================================
+let radarChart = null;
+
+function renderRadarChart(canvasId, stats) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (!stats) return;
+
+    // Define data points matching standard radar order
+    const data = {
+        labels: ['HP', '攻擊', '防禦', '速度', '特防', '特攻'],
+        datasets: [{
+            label: '數值',
+            data: [stats.hp, stats.atk, stats.def, stats.spe, stats.spd, stats.spa],
+            backgroundColor: 'rgba(245, 158, 11, 0.4)',
+            borderColor: 'rgba(245, 158, 11, 1)',
+            pointBackgroundColor: '#fff',
+            pointBorderColor: 'rgba(245, 158, 11, 1)',
+            borderWidth: 2,
+        }]
+    };
+
+    const config = {
+        type: 'radar',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                    pointLabels: { color: '#f8fafc', font: { size: 10 } },
+                    ticks: {
+                        display: false,
+                        min: 0,
+                        max: 300,
+                        stepSize: 50
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    };
+
+    if (radarChart) {
+        radarChart.data = data;
+        radarChart.update();
+    } else {
+        radarChart = new Chart(ctx, config);
+    }
+}

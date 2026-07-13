@@ -4,7 +4,8 @@ const MONSTERS = [
     {
         name: "妙蛙椰子",
         img: "assets/1.jpg",
-        desc: "由濃稠椰奶聚合而成的果凍狀怪物。",
+        desc: "御三家初階。背上頂著一顆小椰子的幼體，各項能力均衡，潛力十足。",
+        stats: { hp: 60, atk: 65, def: 70, spa: 80, spd: 80, spe: 55 },
         cards: [
             { id: 1, condition: "受到20點傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "受到40點傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -14,7 +15,8 @@ const MONSTERS = [
     {
         name: "妙蛙椰草",
         img: "assets/3.jpg",
-        desc: "喜歡成群結隊在沙灘上惡作劇。",
+        desc: "御三家二階。椰子開始長出綠葉，特攻與特防顯著提升，適合持久戰。",
+        stats: { hp: 90, atk: 85, def: 95, spa: 110, spd: 110, spe: 75 },
         cards: [
             { id: 1, condition: "選擇這個選項的小隊分攤30點傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "選擇這個選項的小隊分攤60點傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -24,7 +26,8 @@ const MONSTERS = [
     {
         name: "妙蛙椰樹",
         img: "assets/2.jpg",
-        desc: "披著厚重椰棕的叢林巨獸。",
+        desc: "御三家三階。背上的椰子樹完全長成，擁有高水準的雙防與特攻，全能型主力。",
+        stats: { hp: 140, atk: 120, def: 150, spa: 180, spd: 180, spe: 110 },
         cards: [
             { id: 1, condition: "如果這回合有至少1個小隊選擇逃跑，受到40點傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "如果這回合有至少2個小隊選擇逃跑，受到60點傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -34,7 +37,8 @@ const MONSTERS = [
     {
         name: "椰蛋",
         img: "assets/9.jpg",
-        desc: "以堅硬無比的椰核為核心變異而成。",
+        desc: "初階物盾。尚未孵化/發芽的群聚椰子，外殼堅硬但攻擊力低落。",
+        stats: { hp: 50, atk: 40, def: 80, spa: 60, spd: 45, spe: 40 },
         cards: [
             { id: 1, condition: "如果這個選項有奇數個小隊選，受到50傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "如果這個選項有偶數個小隊選，受到50傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -44,7 +48,8 @@ const MONSTERS = [
     {
         name: "小椰怪",
         img: "assets/5.jpg",
-        desc: "長滿青苔的巨大摩艾石像。",
+        desc: "初階物理打手。脾氣暴躁的帶殼小怪，特攻極低，純靠椰殼撞擊。",
+        stats: { hp: 45, atk: 75, def: 90, spa: 30, spd: 50, spe: 60 },
         cards: [
             { id: 1, condition: "直到死掉或休息整備前，每次袋子內的椰子變多，就受到10傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "直到死掉或休息整備前，每次袋子內的椰子變多，就受到30傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -54,7 +59,8 @@ const MONSTERS = [
     {
         name: "三合一椰怪",
         img: "assets/8.jpg",
-        desc: "騎乘深海椰子蟹的怨靈。",
+        desc: "進階重裝怪。三顆小椰怪吸附在一起，擁有極佳的物理防禦與特攻輸出。",
+        stats: { hp: 85, atk: 110, def: 160, spa: 150, spd: 120, spe: 90 },
         cards: [
             { id: 1, condition: "選擇此選項的小隊中，袋子內椰子最少者受到60傷害。同時最少者全部皆會受傷。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "選擇此選項的小隊中，袋子內椰子最多者受到70傷害。同時最多者全部皆會受傷。", tags: ["獲得兩顆椰子"], escape: false },
@@ -64,7 +70,8 @@ const MONSTERS = [
     {
         name: "阿羅拉椰蛋樹",
         img: "assets/7-1.jpg",
-        desc: "拍打翅膀時會捲起熱帶風暴。",
+        desc: "重砲法師。脖子極長的亞種，犧牲了速度，但換來了驚人的血量與特攻爆發力。",
+        stats: { hp: 180, atk: 160, def: 130, spa: 200, spd: 140, spe: 65 },
         cards: [
             { id: 1, condition: "失去2個椰子，如果選這個選項的小隊不足7個，再打一次阿羅拉椰蛋樹。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "失去2個椰子。", tags: ["獲得兩顆椰子"], escape: false },
@@ -74,7 +81,8 @@ const MONSTERS = [
     {
         name: "霸王椰",
         img: "assets/6.jpg",
-        desc: "枯死椰子樹與白骨結合的祭司。",
+        desc: "物理推土機。具有霸王龍基因的變異椰子，攻擊力逼近頂峰，只要近身就能秒殺對手。",
+        stats: { hp: 220, atk: 250, def: 190, spa: 80, spd: 110, spe: 85 },
         cards: [
             { id: 1, condition: "每個選擇此選項的小隊各自指定另外一隊，你移除他袋內2顆椰子。", tags: ["獲得一顆椰子"], escape: false, requireTarget: true },
             { id: 2, condition: "每個選擇此選項的小隊各自對其指定1小隊造成40點傷害。", tags: ["獲得兩顆椰子"], escape: false, requireTarget: true },
@@ -84,7 +92,8 @@ const MONSTERS = [
     {
         name: "走路椰",
         img: "assets/4.jpg",
-        desc: "沉入深海吸收怨念的巨大腐爛椰子。",
+        desc: "新手村雜魚。長著小腳的椰子，動作緩慢，防禦力僅靠薄薄的椰子皮。",
+        stats: { hp: 40, atk: 50, def: 55, spa: 65, spd: 60, spe: 30 },
         cards: [
             { id: 1, condition: "如果選這個選項的小隊比選2的多，選擇選項2或3的小隊受到100點傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "如果選這個選項的小隊比選1的多，選擇選項1或3的小隊受到50點傷害。", tags: ["獲得兩顆椰子"], escape: false },
@@ -94,7 +103,8 @@ const MONSTERS = [
     {
         name: "椰神月",
         img: "assets/10.jpg",
-        desc: "一切椰子的起源，神話級巨型椰子。",
+        desc: "傳說神獸。吸收月光精華的遠古大魔神，特攻與特防近乎滿分，速度極快，屬於毀滅級存在。",
+        stats: { hp: 250, atk: 140, def: 160, spa: 280, spd: 290, spe: 210 },
         cards: [
             { id: 1, condition: "如果沒人選這個選項，所有人受到90傷害。", tags: ["獲得一顆椰子"], escape: false },
             { id: 2, condition: "如果沒人選這個選項，所有人受到90傷害。", tags: ["獲得兩顆椰子"], escape: false },

@@ -18,6 +18,7 @@
         
         .teams-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; margin-top: 1rem; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container" style="max-width: 1700px; padding: 2rem; display: flex; flex-direction: column; min-height: 90vh; justify-content: space-between;">
@@ -41,7 +42,13 @@
             <div id="view-encounter" style="display: none; text-align: center;">
                 <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 0.5rem;">
-                        <img id="proj-monster-img" src="" alt="Monster" style="width: 100px; height: 100px; object-fit: cover; border-radius: 12px; border: 3px solid var(--danger-red); box-shadow: 0 5px 15px rgba(239,68,68,0.3);">
+                        
+                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 1rem;">
+                            <img id="proj-monster-img" src="" alt="Monster" style="width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 3px solid var(--danger-red); box-shadow: 0 5px 15px rgba(239,68,68,0.3);">
+                            <div style="width: 150px; height: 150px;">
+                                <canvas id="proj-monster-radar-chart"></canvas>
+                            </div>
+                        </div>
                         <div style="text-align: left;">
                             <h2 id="proj-monster-name" style="font-size: 1.8rem; color: #fff; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">-</h2>
                             <p id="proj-monster-desc" style="color: #cbd5e1; font-size: 1rem; margin-top: 0.25rem;">-</p>
